@@ -335,14 +335,23 @@ body {
     gap: 2rem;
     padding: 1.5rem;
     box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
   }
 
   .project-title {
     font-size: 2.2rem;
+    text-align: center;
   }
 
   .slogan {
     font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .project-title-row {
+    justify-content: center;
+    align-items: center;
   }
 
   .logo-wrapper {
@@ -432,14 +441,23 @@ body {
   .auth-page-center {
     padding: 1rem;
     box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
   }
 
   .project-title {
     font-size: 1.8rem;
+    text-align: center;
   }
 
   .slogan {
     font-size: 1rem;
+    text-align: center;
+  }
+
+  .project-title-row {
+    justify-content: center;
+    align-items: center;
   }
 
   .logo-wrapper {
@@ -536,6 +554,11 @@ body {
 }
 
 @media (max-width: 400px) {
+  .auth-page-center {
+    justify-content: center;
+    align-items: center;
+  }
+
   .auth-container {
     padding: 1rem 0.8rem;
     max-width: calc(100% - 1.5rem);
@@ -552,10 +575,17 @@ body {
 
   .project-title {
     font-size: 1.6rem;
+    text-align: center;
   }
 
   .slogan {
     font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .project-title-row {
+    justify-content: center;
+    align-items: center;
   }
 
   .logo-wrapper {
@@ -614,6 +644,8 @@ body {
 @media (max-width: 320px) {
   .auth-page-center {
     padding: 0.5rem;
+    justify-content: center;
+    align-items: center;
   }
 
   .auth-container {
@@ -632,10 +664,17 @@ body {
 
   .project-title {
     font-size: 1.4rem;
+    text-align: center;
   }
 
   .slogan {
     font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .project-title-row {
+    justify-content: center;
+    align-items: center;
   }
 
   .project-title-row {
