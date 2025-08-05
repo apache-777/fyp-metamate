@@ -1,12 +1,10 @@
-# fyp-metamate
+# Metamate
 
 
-## To run the app
+## Backend
 
-cd backend
-node index.js
+On Railway
 
-then
+## Frontend
 
-cd frontend
-npm start
+On Vercel
