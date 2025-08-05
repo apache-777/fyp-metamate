@@ -157,7 +157,7 @@ body {
 .dashboard-container {
   max-width: 900px;
   padding: 2.5rem 3rem;
-  margin: 2rem;
+  margin: 2rem auto;
   box-sizing: border-box;
 }
 .video-area {
