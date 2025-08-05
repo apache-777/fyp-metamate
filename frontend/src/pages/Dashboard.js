@@ -493,35 +493,19 @@ export default function Dashboard({ onLogout }) {
       window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
 
-    // Configure for better mobile compatibility
+    // Configure for automatic stopping
     recognition.lang = "en-US";
-    recognition.continuous = true; // Keep listening
-    recognition.interimResults = true; // Get interim results
+    recognition.continuous = false; // Stop after one recognition
+    recognition.interimResults = false; // Only get final results
     recognition.maxAlternatives = 1;
 
     // Handle successful recognition
     recognition.onresult = (event) => {
-      let finalTranscript = "";
-      let interimTranscript = "";
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript;
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      // Update subtitle with final results
-      if (finalTranscript) {
-        setSubtitle(finalTranscript);
-        const currentWs = ws;
-        if (currentWs && currentWs.readyState === WebSocket.OPEN) {
-          currentWs.send(
-            JSON.stringify({ type: "stt", text: finalTranscript })
-          );
-        }
+      const transcript = event.results[0][0].transcript;
+      setSubtitle(transcript);
+      const currentWs = ws;
+      if (currentWs && currentWs.readyState === WebSocket.OPEN) {
+        currentWs.send(JSON.stringify({ type: "stt", text: transcript }));
       }
     };
 
@@ -544,6 +528,7 @@ export default function Dashboard({ onLogout }) {
       console.log("Speech recognition ended");
       setIsListening(false);
       setShowSubtitle(false);
+      setStatus("Speech recognition completed");
     };
 
     // Handle when recognition starts
@@ -563,17 +548,6 @@ export default function Dashboard({ onLogout }) {
       setIsListening(false);
       setShowSubtitle(false);
     }
-  };
-
-  // Stop speech recognition
-  const stopStt = () => {
-    if (recognition) {
-      recognition.stop();
-      setRecognition(null);
-    }
-    setIsListening(false);
-    setShowSubtitle(false);
-    setStatus("Speech recognition stopped");
   };
 
   return (
@@ -716,13 +690,15 @@ export default function Dashboard({ onLogout }) {
         {/* STT */}
         <div className="stt-area">
           <button
-            onClick={isListening ? stopStt : startStt}
+            onClick={startStt}
+            disabled={isListening}
             style={{
-              backgroundColor: isListening ? "#ff6b6b" : "#4fc3f7",
+              backgroundColor: isListening ? "#cccccc" : "#4fc3f7",
               color: "white",
+              cursor: isListening ? "not-allowed" : "pointer",
             }}
           >
-            {isListening ? "Stop Speech-to-Text" : "Start Speech-to-Text"}
+            {isListening ? "Listening..." : "Start Speech-to-Text"}
           </button>
           {subtitle && <div className="subtitle">{subtitle}</div>}
         </div>
