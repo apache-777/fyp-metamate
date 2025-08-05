@@ -157,7 +157,12 @@ body {
 .dashboard-container {
   max-width: 900px;
   padding: 2.5rem 3rem;
+<<<<<<< HEAD
+  margin: 2rem;
   box-sizing: border-box;
+=======
+  box-sizing: border-box;
+>>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
 }
 .video-area {
   display: flex;
@@ -310,7 +315,7 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: space-around;
-  padding: 0 5vw;
+  padding: 2rem 3rem;
   box-sizing: border-box;
 }
 
@@ -321,7 +326,7 @@ body {
 }
 
 .auth-container {
-  margin: 0;
+  margin: 2rem;
   width: 100%;
   max-width: 450px;
   min-width: 250px;
@@ -332,7 +337,7 @@ body {
   .auth-page-center {
     flex-direction: column;
     gap: 2rem;
-    padding: 1rem;
+    padding: 1.5rem;
     box-sizing: border-box;
   }
 
@@ -341,17 +346,17 @@ body {
   }
 
   .auth-container {
-    max-width: calc(100% - 2rem);
+    max-width: calc(100% - 3rem);
     min-width: auto;
     padding: 2rem 1.5rem;
-    margin: 1rem;
+    margin: 1.5rem;
     box-sizing: border-box;
   }
 
   .dashboard-container {
-    max-width: calc(100% - 2rem);
+    max-width: calc(100% - 3rem);
     padding: 1.5rem 1rem;
-    margin: 1rem;
+    margin: 1.5rem;
     box-sizing: border-box;
   }
 
@@ -385,10 +390,11 @@ body {
   }
 
   .profile-update-container {
-    max-width: calc(100% - 2rem);
+    max-width: calc(100% - 3rem);
     padding: 1.5rem 1rem;
-    margin: 1rem;
+    margin: 1.5rem;
     box-sizing: border-box;
+
   }
 
   .profile-update-container h2 {
@@ -412,7 +418,7 @@ body {
 
 @media (max-width: 600px) {
   .auth-page-center {
-    padding: 0.5rem;
+    padding: 1rem;
     box-sizing: border-box;
   }
 
@@ -422,16 +428,22 @@ body {
 
   .auth-container {
     padding: 1.5rem 1rem;
-    margin: 0.5rem;
-    max-width: calc(100% - 1rem);
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
     box-sizing: border-box;
   }
 
   .dashboard-container {
     padding: 1rem 0.8rem;
+<<<<<<< HEAD
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+    box-sizing: border-box;
+=======
     margin: 0.5rem;
     max-width: calc(100% - 1rem);
     box-sizing: border-box;
+>>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
   }
 
   .dashboard-container h2 {
@@ -466,9 +478,15 @@ body {
 
   .profile-update-container {
     padding: 1rem 0.8rem;
+<<<<<<< HEAD
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+    box-sizing: border-box;
+=======
     margin: 0.5rem;
     max-width: calc(100% - 1rem);
     box-sizing: border-box;
+>>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
   }
 
   .profile-update-container h2 {
@@ -499,15 +517,16 @@ body {
 @media (max-width: 400px) {
   .auth-container {
     padding: 1rem 0.8rem;
-    max-width: calc(100% - 1rem);
+    max-width: calc(100% - 1.5rem);
     box-sizing: border-box;
-    margin: 0.5rem;
+    margin: 0.75rem;
   }
 
   .dashboard-container {
     padding: 0.8rem 0.5rem;
-    max-width: calc(100% - 1rem);
-    margin: 0.5rem;
+    max-width: calc(100% - 1.5rem);
+    margin: 0.75rem;
+    box-sizing: border-box;
   }
 
   .pip-area {
@@ -530,9 +549,15 @@ body {
 
   .profile-update-container {
     padding: 0.8rem 0.5rem;
+<<<<<<< HEAD
+    max-width: calc(100% - 1.5rem);
+    margin: 0.75rem;
+    box-sizing: border-box;
+=======
     max-width: calc(100% - 1rem);
     margin: 0.5rem;
     box-sizing: border-box;
+>>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
   }
 
   .avatar-grid {
@@ -548,19 +573,21 @@ body {
 
 @media (max-width: 320px) {
   .auth-page-center {
-    padding: 0.25rem;
+    padding: 0.5rem;
   }
 
   .auth-container {
     padding: 0.8rem 0.6rem;
-    max-width: calc(100% - 0.5rem);
-    margin: 0.25rem;
+    max-width: calc(100% - 1rem);
+    margin: 0.5rem;
+    box-sizing: border-box;
   }
 
   .dashboard-container {
     padding: 0.6rem 0.4rem;
-    max-width: calc(100% - 0.5rem);
-    margin: 0.25rem;
+    max-width: calc(100% - 1rem);
+    margin: 0.5rem;
+    box-sizing: border-box;
   }
 
   .project-title {
@@ -583,12 +610,22 @@ body {
     width: 76px;
     height: 76px;
   }
+<<<<<<< HEAD
+
+  .profile-update-container {
+    padding: 0.6rem 0.4rem;
+    max-width: calc(100% - 1rem);
+    margin: 0.5rem;
+    box-sizing: border-box;
+  }
+=======
 
   .profile-update-container {
     padding: 0.6rem 0.4rem;
     max-width: calc(100% - 0.5rem);
     margin: 0.25rem;
   }
+>>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
 }
 
 .auth-container h2 {
@@ -820,7 +857,7 @@ body {
 
 .profile-update-container {
   max-width: 480px;
-  margin: 3rem auto;
+  margin: 3rem 2rem;
   background: rgba(255, 255, 255, 0.13);
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(31, 38, 135, 0.13);
