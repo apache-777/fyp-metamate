@@ -19,12 +19,14 @@ export default function Dashboard({ onLogout }) {
   const localStreamRef = useRef();
   const isCallerRef = useRef(false);
   const [showSubtitle, setShowSubtitle] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [username, setUsername] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [avatar, setAvatar] = useState(
     "https://i.ibb.co/2kR8bQn/avatar-placeholder.png"
   );
   const [peerUsername, setPeerUsername] = useState("");
+  const [recognition, setRecognition] = useState(null);
 
   const navigate = useNavigate();
 
@@ -404,6 +406,14 @@ export default function Dashboard({ onLogout }) {
     setInCall(false);
     setPeerUsername("");
 
+    // Stop speech recognition if active
+    if (recognition) {
+      recognition.stop();
+      setRecognition(null);
+    }
+    setIsListening(false);
+    setShowSubtitle(false);
+
     // Clean up peer connection
     if (pcRef.current) {
       console.log("Closing peer connection...");
@@ -468,22 +478,102 @@ export default function Dashboard({ onLogout }) {
       setStatus("Cannot start speech-to-text: No user connected.");
       return;
     }
-    setShowSubtitle(true);
-    if (!("webkitSpeechRecognition" in window)) {
-      alert("Speech recognition not supported");
+
+    // Check for speech recognition support
+    if (
+      !("webkitSpeechRecognition" in window) &&
+      !("SpeechRecognition" in window)
+    ) {
+      alert("Speech recognition not supported on this device/browser");
       return;
     }
-    const recognition = new window.webkitSpeechRecognition();
+
+    // Use the appropriate speech recognition API
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    // Configure for better mobile compatibility
     recognition.lang = "en-US";
+    recognition.continuous = true; // Keep listening
+    recognition.interimResults = true; // Get interim results
+    recognition.maxAlternatives = 1;
+
+    // Handle successful recognition
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setSubtitle(transcript);
-      const currentWs = ws;
-      if (currentWs && currentWs.readyState === WebSocket.OPEN) {
-        currentWs.send(JSON.stringify({ type: "stt", text: transcript }));
+      let finalTranscript = "";
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      // Update subtitle with final results
+      if (finalTranscript) {
+        setSubtitle(finalTranscript);
+        const currentWs = ws;
+        if (currentWs && currentWs.readyState === WebSocket.OPEN) {
+          currentWs.send(
+            JSON.stringify({ type: "stt", text: finalTranscript })
+          );
+        }
       }
     };
-    recognition.start();
+
+    // Handle errors
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+      setShowSubtitle(false);
+      if (event.error === "not-allowed") {
+        setStatus("Microphone access denied. Please allow microphone access.");
+      } else if (event.error === "no-speech") {
+        setStatus("No speech detected. Please try again.");
+      } else {
+        setStatus(`Speech recognition error: ${event.error}`);
+      }
+    };
+
+    // Handle when recognition ends
+    recognition.onend = () => {
+      console.log("Speech recognition ended");
+      setIsListening(false);
+      setShowSubtitle(false);
+    };
+
+    // Handle when recognition starts
+    recognition.onstart = () => {
+      console.log("Speech recognition started");
+      setIsListening(true);
+      setShowSubtitle(true);
+      setStatus("Listening for speech...");
+    };
+
+    try {
+      recognition.start();
+      setRecognition(recognition);
+    } catch (error) {
+      console.error("Error starting speech recognition:", error);
+      setStatus("Failed to start speech recognition. Please try again.");
+      setIsListening(false);
+      setShowSubtitle(false);
+    }
+  };
+
+  // Stop speech recognition
+  const stopStt = () => {
+    if (recognition) {
+      recognition.stop();
+      setRecognition(null);
+    }
+    setIsListening(false);
+    setShowSubtitle(false);
+    setStatus("Speech recognition stopped");
   };
 
   return (
@@ -625,7 +715,15 @@ export default function Dashboard({ onLogout }) {
         </div>
         {/* STT */}
         <div className="stt-area">
-          <button onClick={startStt}>Start Speech-to-Text</button>
+          <button
+            onClick={isListening ? stopStt : startStt}
+            style={{
+              backgroundColor: isListening ? "#ff6b6b" : "#4fc3f7",
+              color: "white",
+            }}
+          >
+            {isListening ? "Stop Speech-to-Text" : "Start Speech-to-Text"}
+          </button>
           {subtitle && <div className="subtitle">{subtitle}</div>}
         </div>
       </div>
