@@ -472,10 +472,44 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
+  // Test speech recognition support
+  const testSpeechRecognition = () => {
+    console.log("Testing speech recognition support...");
+    console.log("User Agent:", navigator.userAgent);
+    console.log("Protocol:", window.location.protocol);
+    console.log("Hostname:", window.location.hostname);
+    console.log(
+      "webkitSpeechRecognition available:",
+      "webkitSpeechRecognition" in window
+    );
+    console.log("SpeechRecognition available:", "SpeechRecognition" in window);
+
+    if (
+      navigator.userAgent.match(
+        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+      )
+    ) {
+      console.log("Mobile device detected");
+    } else {
+      console.log("Desktop device detected");
+    }
+  };
+
   // Speech-to-text (STT) using Web Speech API
   const startStt = () => {
     if (!connected) {
       setStatus("Cannot start speech-to-text: No user connected.");
+      return;
+    }
+
+    // Check if we're on HTTPS (required for mobile)
+    if (
+      window.location.protocol !== "https:" &&
+      window.location.hostname !== "localhost"
+    ) {
+      alert(
+        "Speech recognition requires HTTPS on mobile devices. Please use HTTPS or localhost."
+      );
       return;
     }
 
@@ -484,7 +518,9 @@ export default function Dashboard({ onLogout }) {
       !("webkitSpeechRecognition" in window) &&
       !("SpeechRecognition" in window)
     ) {
-      alert("Speech recognition not supported on this device/browser");
+      alert(
+        "Speech recognition not supported on this device/browser. Please try Chrome, Safari, or Edge."
+      );
       return;
     }
 
@@ -493,11 +529,22 @@ export default function Dashboard({ onLogout }) {
       window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
 
-    // Configure for automatic stopping
+    // Configure for mobile compatibility
     recognition.lang = "en-US";
     recognition.continuous = false; // Stop after one recognition
     recognition.interimResults = false; // Only get final results
     recognition.maxAlternatives = 1;
+
+    // Mobile-specific settings
+    if (
+      navigator.userAgent.match(
+        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+      )
+    ) {
+      // Mobile-specific configuration
+      recognition.continuous = false;
+      recognition.interimResults = false;
+    }
 
     // Handle successful recognition
     recognition.onresult = (event) => {
@@ -514,12 +561,26 @@ export default function Dashboard({ onLogout }) {
       console.error("Speech recognition error:", event.error);
       setIsListening(false);
       setShowSubtitle(false);
+
+      // Mobile-specific error handling
       if (event.error === "not-allowed") {
-        setStatus("Microphone access denied. Please allow microphone access.");
+        setStatus(
+          "Microphone access denied. Please allow microphone access in your browser settings."
+        );
+        alert(
+          "Please allow microphone access in your browser settings and try again."
+        );
       } else if (event.error === "no-speech") {
         setStatus("No speech detected. Please try again.");
+      } else if (event.error === "network") {
+        setStatus("Network error. Please check your internet connection.");
+      } else if (event.error === "service-not-allowed") {
+        setStatus(
+          "Speech recognition service not available. Please try again later."
+        );
       } else {
         setStatus(`Speech recognition error: ${event.error}`);
+        console.log("Full error event:", event);
       }
     };
 
@@ -699,6 +760,18 @@ export default function Dashboard({ onLogout }) {
             }}
           >
             {isListening ? "Listening..." : "Start Speech-to-Text"}
+          </button>
+          <button
+            onClick={testSpeechRecognition}
+            style={{
+              backgroundColor: "#666",
+              color: "white",
+              marginLeft: "0.5rem",
+              fontSize: "0.8rem",
+              padding: "0.5rem",
+            }}
+          >
+            Debug STT
           </button>
           {subtitle && <div className="subtitle">{subtitle}</div>}
         </div>
