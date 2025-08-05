@@ -157,12 +157,8 @@ body {
 .dashboard-container {
   max-width: 900px;
   padding: 2.5rem 3rem;
-<<<<<<< HEAD
   margin: 2rem;
   box-sizing: border-box;
-=======
-  box-sizing: border-box;
->>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
 }
 .video-area {
   display: flex;
@@ -394,7 +390,6 @@ body {
     padding: 1.5rem 1rem;
     margin: 1.5rem;
     box-sizing: border-box;
-
   }
 
   .profile-update-container h2 {
@@ -435,15 +430,9 @@ body {
 
   .dashboard-container {
     padding: 1rem 0.8rem;
-<<<<<<< HEAD
     margin: 1rem;
     max-width: calc(100% - 2rem);
     box-sizing: border-box;
-=======
-    margin: 0.5rem;
-    max-width: calc(100% - 1rem);
-    box-sizing: border-box;
->>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
   }
 
   .dashboard-container h2 {
@@ -478,15 +467,9 @@ body {
 
   .profile-update-container {
     padding: 1rem 0.8rem;
-<<<<<<< HEAD
     margin: 1rem;
     max-width: calc(100% - 2rem);
     box-sizing: border-box;
-=======
-    margin: 0.5rem;
-    max-width: calc(100% - 1rem);
-    box-sizing: border-box;
->>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
   }
 
   .profile-update-container h2 {
@@ -549,15 +532,9 @@ body {
 
   .profile-update-container {
     padding: 0.8rem 0.5rem;
-<<<<<<< HEAD
     max-width: calc(100% - 1.5rem);
     margin: 0.75rem;
     box-sizing: border-box;
-=======
-    max-width: calc(100% - 1rem);
-    margin: 0.5rem;
-    box-sizing: border-box;
->>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
   }
 
   .avatar-grid {
@@ -610,7 +587,6 @@ body {
     width: 76px;
     height: 76px;
   }
-<<<<<<< HEAD
 
   .profile-update-container {
     padding: 0.6rem 0.4rem;
@@ -618,14 +594,6 @@ body {
     margin: 0.5rem;
     box-sizing: border-box;
   }
-=======
-
-  .profile-update-container {
-    padding: 0.6rem 0.4rem;
-    max-width: calc(100% - 0.5rem);
-    margin: 0.25rem;
-  }
->>>>>>> 4112baf42c33098be2e370b2d7850a0d8e834126
 }
 
 .auth-container h2 {
