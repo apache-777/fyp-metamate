@@ -157,6 +157,7 @@ body {
 .dashboard-container {
   max-width: 900px;
   padding: 2.5rem 3rem;
+  box-sizing: border-box;
 }
 .video-area {
   display: flex;
@@ -348,9 +349,10 @@ body {
   }
 
   .dashboard-container {
-    max-width: 100%;
+    max-width: calc(100% - 2rem);
     padding: 1.5rem 1rem;
     margin: 1rem;
+    box-sizing: border-box;
   }
 
   .dashboard-container h2 {
@@ -383,9 +385,10 @@ body {
   }
 
   .profile-update-container {
-    max-width: 100%;
+    max-width: calc(100% - 2rem);
     padding: 1.5rem 1rem;
     margin: 1rem;
+    box-sizing: border-box;
   }
 
   .profile-update-container h2 {
@@ -427,6 +430,8 @@ body {
   .dashboard-container {
     padding: 1rem 0.8rem;
     margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+    box-sizing: border-box;
   }
 
   .dashboard-container h2 {
@@ -462,6 +467,8 @@ body {
   .profile-update-container {
     padding: 1rem 0.8rem;
     margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+    box-sizing: border-box;
   }
 
   .profile-update-container h2 {
@@ -523,6 +530,9 @@ body {
 
   .profile-update-container {
     padding: 0.8rem 0.5rem;
+    max-width: calc(100% - 1rem);
+    margin: 0.5rem;
+    box-sizing: border-box;
   }
 
   .avatar-grid {
@@ -572,6 +582,12 @@ body {
   .project-logo {
     width: 76px;
     height: 76px;
+  }
+
+  .profile-update-container {
+    padding: 0.6rem 0.4rem;
+    max-width: calc(100% - 0.5rem);
+    margin: 0.25rem;
   }
 }
 
@@ -813,6 +829,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .profile-update-container h2 {
