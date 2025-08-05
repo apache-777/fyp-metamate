@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Optimistic+Display:wght@700&display=swap');
+
+.project-title {
+  font-family: 'Optimistic Display', 'Montserrat', Arial, sans-serif;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.project-title .meta {
+  color: #4fc3f7;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+} 
+
+.mate {
+  color: white;
+} 
+
+.project-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.project-logo {
+  width: 92;
+  height: 92px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(31,38,135,0.13);
+  background: #fff;
+} 
+
+.logo-wrapper {
+  padding: 18px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  min-width: 96px;
+  min-height: 96px;
+}
+
+.slogan {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #fff;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
