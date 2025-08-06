@@ -984,6 +984,19 @@ export default function Dashboard({ onLogout }) {
           )}
         </div>
 
+        {/* Start Video button */}
+        {connected && showStartVideoButton && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "1rem",
+            }}
+          >
+            <button onClick={startVideo}>Start Video</button>
+          </div>
+        )}
+
         {/* Video area */}
         <div className="video-area pip-area">
           <div className="remote-video-container">
@@ -1035,31 +1048,6 @@ export default function Dashboard({ onLogout }) {
         </div>
 
         {/* Debug information */}
-        {connected && showStartVideoButton && (
-          <div
-            style={{
-              marginTop: "10px",
-              display: "flex",
-              gap: "5px",
-              flexWrap: "wrap",
-            }}
-          >
-            <button
-              onClick={startVideo}
-              style={{
-                padding: "5px 10px",
-                fontSize: "11px",
-                backgroundColor: "#f44336",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              Start Video
-            </button>
-          </div>
-        )}
 
         {inCall && (
           <div className="in-call-indicator">You are in a video call</div>
