@@ -1066,7 +1066,7 @@ export default function Dashboard({ onLogout }) {
         )}
 
         {/* Video area */}
-        <div className="video-area pip-area">
+        <div className="video-area pip-area display">
           <div className="remote-video-container">
             <video
               ref={remoteVideoRef}
