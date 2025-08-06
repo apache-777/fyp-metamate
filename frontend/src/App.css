@@ -1128,6 +1128,10 @@ body {
     height: 100%;
     position: static;
     order: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .local-video-container {
