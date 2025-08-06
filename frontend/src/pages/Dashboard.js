@@ -937,14 +937,6 @@ export default function Dashboard({ onLogout }) {
             : status}
         </div>
 
-        {/* Connection state indicators */}
-        {connected && (
-          <div style={{ margin: "10px 0", fontSize: "14px", color: "#666" }}>
-            <div>Connection: {connectionState}</div>
-            <div>ICE: {iceConnectionState}</div>
-          </div>
-        )}
-
         <div
           style={{
             display: "flex",
