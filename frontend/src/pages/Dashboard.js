@@ -592,6 +592,11 @@ export default function Dashboard({ onLogout }) {
     if (data.type === "partner_disconnected") {
       console.log("Partner disconnected");
       setStatus("Partner disconnected.");
+      const divsToModify = document.querySelectorAll(".convoArea");
+
+      divsToModify.forEach((div) => {
+        div.classList.add("display");
+      });
       setConnected(false);
       setSubtitle("");
       setPeerUsername("");
