@@ -245,9 +245,16 @@ export default function Dashboard({ onLogout }) {
           console.log("Setting remote video srcObject");
           remoteVideoRef.current.srcObject = remoteStream;
 
+          // Force video element to update
+          remoteVideoRef.current.load();
+
           // Ensure video plays with multiple attempts
           const playVideo = () => {
             console.log("Attempting to play remote video...");
+            console.log("Video readyState:", remoteVideoRef.current.readyState);
+            console.log("Video paused:", remoteVideoRef.current.paused);
+            console.log("Video ended:", remoteVideoRef.current.ended);
+
             remoteVideoRef.current
               .play()
               .then(() => {
@@ -257,23 +264,32 @@ export default function Dashboard({ onLogout }) {
               })
               .catch((e) => {
                 console.error("Failed to play remote video:", e);
-                // Retry after a short delay
+                console.log("Video error details:", e.name, e.message);
+
+                // Retry with different approach
                 setTimeout(() => {
                   if (
                     remoteVideoRef.current &&
                     remoteVideoRef.current.srcObject
                   ) {
-                    console.log("Retrying video play...");
+                    console.log("Retrying video play with load()...");
+                    remoteVideoRef.current.load();
                     remoteVideoRef.current.play().catch((e2) => {
                       console.error("Retry failed:", e2);
                     });
                   }
-                }, 1000);
+                }, 500);
               });
           };
 
           remoteVideoRef.current.onloadedmetadata = () => {
             console.log("Remote video metadata loaded");
+            console.log(
+              "Video dimensions:",
+              remoteVideoRef.current.videoWidth,
+              "x",
+              remoteVideoRef.current.videoHeight
+            );
             playVideo();
           };
 
@@ -290,6 +306,19 @@ export default function Dashboard({ onLogout }) {
 
           remoteVideoRef.current.onerror = (e) => {
             console.error("Remote video error:", e);
+            console.log(
+              "Video error code:",
+              remoteVideoRef.current.error?.code
+            );
+            console.log(
+              "Video error message:",
+              remoteVideoRef.current.error?.message
+            );
+          };
+
+          remoteVideoRef.current.onloadeddata = () => {
+            console.log("Remote video data loaded");
+            playVideo();
           };
 
           // If metadata is already loaded, try to play immediately
@@ -297,6 +326,14 @@ export default function Dashboard({ onLogout }) {
             console.log("Video already has metadata, playing immediately");
             playVideo();
           }
+
+          // Force a play attempt after a short delay
+          setTimeout(() => {
+            if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
+              console.log("Forcing delayed video play attempt...");
+              playVideo();
+            }
+          }, 2000);
         } else {
           console.error("❌ Remote video element not found!");
         }
@@ -767,6 +804,16 @@ export default function Dashboard({ onLogout }) {
   const forcePlayVideo = () => {
     if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
       console.log("Manually forcing video play...");
+      console.log("Video element state:");
+      console.log("- readyState:", remoteVideoRef.current.readyState);
+      console.log("- paused:", remoteVideoRef.current.paused);
+      console.log("- ended:", remoteVideoRef.current.ended);
+      console.log("- muted:", remoteVideoRef.current.muted);
+      console.log("- srcObject:", remoteVideoRef.current.srcObject);
+
+      // Force video to load and play
+      remoteVideoRef.current.load();
+
       remoteVideoRef.current
         .play()
         .then(() => {
@@ -774,9 +821,21 @@ export default function Dashboard({ onLogout }) {
         })
         .catch((e) => {
           console.error("❌ Manual video play failed:", e);
+          console.log("Error details:", e.name, e.message);
+
+          // Try alternative approach
+          setTimeout(() => {
+            console.log("Trying alternative play method...");
+            remoteVideoRef.current.currentTime = 0;
+            remoteVideoRef.current.play().catch((e2) => {
+              console.error("Alternative method also failed:", e2);
+            });
+          }, 100);
         });
     } else {
       console.log("No remote video available to play");
+      console.log("remoteVideoRef.current:", remoteVideoRef.current);
+      console.log("srcObject:", remoteVideoRef.current?.srcObject);
     }
   };
 
@@ -862,6 +921,65 @@ export default function Dashboard({ onLogout }) {
           }
         });
       });
+    }
+  };
+
+  // Check video stream function
+  const checkVideoStream = () => {
+    console.log("Checking video stream...");
+    if (remoteStreamRef.current) {
+      const tracks = remoteStreamRef.current.getTracks();
+      console.log("Remote stream tracks:", tracks);
+      tracks.forEach((track) => {
+        console.log(`Track ${track.kind}:`, {
+          enabled: track.enabled,
+          readyState: track.readyState,
+          muted: track.muted,
+          id: track.id,
+        });
+      });
+    }
+
+    if (remoteVideoRef.current) {
+      console.log("Video element properties:");
+      console.log("- readyState:", remoteVideoRef.current.readyState);
+      console.log("- paused:", remoteVideoRef.current.paused);
+      console.log("- ended:", remoteVideoRef.current.ended);
+      console.log("- muted:", remoteVideoRef.current.muted);
+      console.log("- srcObject:", remoteVideoRef.current.srcObject);
+      console.log("- videoWidth:", remoteVideoRef.current.videoWidth);
+      console.log("- videoHeight:", remoteVideoRef.current.videoHeight);
+    }
+  };
+
+  // Recreate video element function
+  const recreateVideoElement = () => {
+    console.log("Recreating video element...");
+    if (remoteVideoRef.current && remoteStreamRef.current) {
+      // Store the current stream
+      const currentStream = remoteStreamRef.current;
+
+      // Clear the current video element
+      remoteVideoRef.current.srcObject = null;
+
+      // Recreate the video element
+      setTimeout(() => {
+        if (remoteVideoRef.current) {
+          console.log("Setting new srcObject to recreated video element");
+          remoteVideoRef.current.srcObject = currentStream;
+          remoteVideoRef.current.load();
+
+          // Try to play
+          remoteVideoRef.current
+            .play()
+            .then(() => {
+              console.log("✅ Video playing after recreation");
+            })
+            .catch((e) => {
+              console.error("Failed to play after recreation:", e);
+            });
+        }
+      }, 100);
     }
   };
 
@@ -1023,17 +1141,22 @@ export default function Dashboard({ onLogout }) {
             ref={remoteVideoRef}
             autoPlay
             playsInline
+            muted={false}
             className="remote-video"
             style={{
               backgroundColor: "#000",
               minHeight: "300px",
               width: "100%",
               objectFit: "cover",
+              display: "block",
             }}
             onLoadedMetadata={() => console.log("Remote video metadata loaded")}
             onCanPlay={() => console.log("Remote video can play")}
             onPlay={() => console.log("Remote video started playing")}
             onError={(e) => console.error("Remote video error:", e)}
+            onLoadedData={() => console.log("Remote video data loaded")}
+            onWaiting={() => console.log("Remote video waiting")}
+            onStalled={() => console.log("Remote video stalled")}
           />
           <video
             ref={localVideoRef}
@@ -1154,6 +1277,34 @@ export default function Dashboard({ onLogout }) {
                 }}
               >
                 Test Connection
+              </button>
+              <button
+                onClick={checkVideoStream}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: "11px",
+                  backgroundColor: "#9c27b0",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Check Video Stream
+              </button>
+              <button
+                onClick={recreateVideoElement}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: "11px",
+                  backgroundColor: "#ff5722",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Recreate Video
               </button>
             </div>
           </div>
