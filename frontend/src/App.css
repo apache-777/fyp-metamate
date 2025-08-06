@@ -1179,9 +1179,9 @@ body {
 
   .local-video-container {
     width: 100%;
-    height: auto;
-    min-height: 200px;
-    max-height: 40vh;
+    height: 25vh;
+    min-height: 180px;
+    max-height: 300px;
     position: static;
     order: 2;
     top: auto;
@@ -1190,6 +1190,9 @@ body {
     border: 2px solid #4fc3f7;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .remote-video {
@@ -1202,11 +1205,9 @@ body {
 
   .local-video-pip {
     width: 100%;
-    height: auto;
-    min-height: 200px;
-    max-height: 40vh;
+    height: 100%;
     object-fit: cover;
     border-radius: 12px;
-    display: block;
+    min-height: 180px;
   }
 }
