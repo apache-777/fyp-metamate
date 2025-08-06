@@ -1169,9 +1169,9 @@ export default function Dashboard({ onLogout }) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a message"
-            style={{ width: "70%", marginRight: "0" }}
+            style={{ width: "80%", marginRight: "0" }}
           />
-          <button onClick={sendMessage} style={{ width: "30%" }}>
+          <button onClick={sendMessage} style={{ width: "20%" }}>
             Send
           </button>
         </div>
