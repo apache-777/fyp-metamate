@@ -302,7 +302,7 @@ export default function Dashboard({ onLogout }) {
           remoteVideoRef.current.onplay = () => {
             console.log("✅ Remote video started playing");
             setInCall(true);
-            setStatus("In call - Video active onplay");
+            setStatus("Matched with peer - Press button to start video call");
           };
 
           remoteVideoRef.current.onerror = (e) => {
@@ -946,7 +946,7 @@ export default function Dashboard({ onLogout }) {
           }}
         >
           {!connected && (
-            <button onClick={startMatchmaking}>Initialize and Match</button>
+            <button onClick={startMatchmaking}>Start Match</button>
           )}
           {connected && (
             <button
@@ -984,7 +984,7 @@ export default function Dashboard({ onLogout }) {
               marginTop: "1rem",
             }}
           >
-            <button onClick={startVideo}>Start Video</button>
+            <button onClick={startVideo}>Start Video Call</button>
           </div>
         )}
 
