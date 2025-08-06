@@ -272,7 +272,7 @@ export default function Dashboard({ onLogout }) {
               .then(() => {
                 console.log("✅ Remote video started playing successfully");
                 setInCall(true);
-                setStatus("In call - Video active (play)");
+                setStatus(`In call with ${otherUsername} - Video active`);
               })
               .catch((e) => {
                 console.error("Failed to play remote video:", e);
@@ -802,7 +802,8 @@ export default function Dashboard({ onLogout }) {
     setIceConnectionState("new");
     setIceCandidatesSent(0);
     setIceCandidatesReceived(0);
-    setShowStartVideoButton(true); // Reset button visibility for next call
+    setShowStartVideoButton(true);
+    otherUsername = null; // Reset button visibility for next call
 
     // Clear connection timeout
     if (connectionTimeoutRef.current) {
