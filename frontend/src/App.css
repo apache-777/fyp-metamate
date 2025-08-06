@@ -1110,7 +1110,7 @@ body {
   }
 
   .remote-video {
-    width: 60%;
+    width: 50%;
     height: 100%;
     min-height: 300px;
     object-fit: cover;
@@ -1120,7 +1120,7 @@ body {
 
   .local-video-pip {
     position: static;
-    width: 40%;
+    width: 50%;
     height: 100%;
     min-height: 300px;
     object-fit: cover;
