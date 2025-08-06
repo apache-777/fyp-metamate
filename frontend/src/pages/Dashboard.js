@@ -854,7 +854,6 @@ export default function Dashboard({ onLogout }) {
   // Force ICE restart function
   const startVideo = () => {
     document.querySelector(".display").style.display = "flex !important";
-    console.log("Forcing ICE restart...");
     setShowStartVideoButton(false); // Hide the button when clicked
     if (pcRef.current) {
       try {
