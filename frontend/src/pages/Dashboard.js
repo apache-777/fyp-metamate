@@ -301,6 +301,10 @@ export default function Dashboard({ onLogout }) {
 
           remoteVideoRef.current.onplay = () => {
             console.log("✅ Remote video started playing");
+            console.log(
+              "📊 Current peerUsername when video starts:",
+              peerUsername
+            );
             setInCall(true);
             setStatus(
               peerUsername
@@ -504,6 +508,10 @@ export default function Dashboard({ onLogout }) {
 
       // Send our username to the peer
       if (socket && socket.readyState === WebSocket.OPEN) {
+        console.log("📤 Sending username to peer:", username);
+        if (!username) {
+          console.warn("⚠️ Username is empty when trying to send!");
+        }
         socket.send(JSON.stringify({ type: "username", username: username }));
       }
 
@@ -511,10 +519,12 @@ export default function Dashboard({ onLogout }) {
     }
 
     if (data.type === "username") {
-      console.log("Received peer username:", data.username);
+      console.log("📥 Received peer username:", data.username);
+      console.log("📊 Current status before username update:", status);
       setPeerUsername(data.username);
       // Update status if we're already showing the matched message
       if (status.includes("Matched with")) {
+        console.log("📝 Updating status with peer username:", data.username);
         setStatus(
           `Matched with ${data.username} - Press button to start video call`
         );
@@ -626,6 +636,10 @@ export default function Dashboard({ onLogout }) {
 
     // Send our username to the peer (for non-caller)
     if (socket && socket.readyState === WebSocket.OPEN) {
+      console.log("📤 Sending username to peer (non-caller):", username);
+      if (!username) {
+        console.warn("⚠️ Username is empty when trying to send (non-caller)!");
+      }
       socket.send(JSON.stringify({ type: "username", username: username }));
     }
 
