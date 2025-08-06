@@ -28,6 +28,7 @@ export default function Dashboard({ onLogout }) {
   const [peerUsername, setPeerUsername] = useState("");
   const [connectionState, setConnectionState] = useState("new");
   const [iceConnectionState, setIceConnectionState] = useState("new");
+  const connectionTimeoutRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -81,8 +82,13 @@ export default function Dashboard({ onLogout }) {
       { urls: "stun:stun.l.google.com:19302" },
       { urls: "stun:stun1.l.google.com:19302" },
       { urls: "stun:stun2.l.google.com:19302" },
+      { urls: "stun:stun3.l.google.com:19302" },
+      { urls: "stun:stun4.l.google.com:19302" },
     ],
     iceCandidatePoolSize: 10,
+    iceTransportPolicy: "all",
+    bundlePolicy: "max-bundle",
+    rtcpMuxPolicy: "require",
   });
 
   // Enhanced media constraints
@@ -105,14 +111,38 @@ export default function Dashboard({ onLogout }) {
     console.log("Creating new RTCPeerConnection with enhanced config");
     const pc = new window.RTCPeerConnection(getRTCConfiguration());
 
+    // Add a data channel for connection testing
+    try {
+      const dataChannel = pc.createDataChannel("test");
+      dataChannel.onopen = () => {
+        console.log("✅ Data channel opened - connection is working");
+        dataChannel.send("ping");
+      };
+      dataChannel.onmessage = (event) => {
+        console.log("Data channel message received:", event.data);
+      };
+      dataChannel.onclose = () => {
+        console.log("Data channel closed");
+      };
+    } catch (err) {
+      console.log("Could not create data channel:", err);
+    }
+
     // Enhanced event handlers
     pc.onconnectionstatechange = () => {
       console.log("Connection state changed:", pc.connectionState);
       setConnectionState(pc.connectionState);
 
+      // Clear any existing timeout
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+        connectionTimeoutRef.current = null;
+      }
+
       if (pc.connectionState === "connected") {
         console.log("✅ WebRTC connection established successfully!");
         setStatus("Connected - Video call active");
+        setInCall(true);
       } else if (pc.connectionState === "failed") {
         console.error("❌ WebRTC connection failed");
         setStatus("Connection failed - please try again");
@@ -120,6 +150,19 @@ export default function Dashboard({ onLogout }) {
       } else if (pc.connectionState === "disconnected") {
         console.log("⚠️ WebRTC connection disconnected");
         setStatus("Connection lost");
+        setInCall(false);
+      } else if (pc.connectionState === "connecting") {
+        console.log("🔄 WebRTC connecting...");
+        setStatus("Connecting to peer...");
+
+        // Set a timeout for connection
+        connectionTimeoutRef.current = setTimeout(() => {
+          if (pc.connectionState === "connecting") {
+            console.error("❌ Connection timeout - taking too long to connect");
+            setStatus("Connection timeout - please try again");
+            cleanupCall();
+          }
+        }, 30000); // 30 seconds timeout
       }
     };
 
@@ -129,18 +172,35 @@ export default function Dashboard({ onLogout }) {
 
       if (pc.iceConnectionState === "connected") {
         console.log("✅ ICE connection established");
+        setStatus("Network connected - establishing video call...");
       } else if (pc.iceConnectionState === "failed") {
         console.error("❌ ICE connection failed");
-        setStatus("Network connection failed");
+        setStatus("Network connection failed - trying to reconnect...");
+        // Try to restart ICE
+        if (pc.iceRestart) {
+          console.log("Attempting ICE restart...");
+          pc.restartIce();
+        }
+      } else if (pc.iceConnectionState === "checking") {
+        console.log("🔄 ICE checking - finding best connection...");
+        setStatus("Finding best connection...");
+      } else if (pc.iceConnectionState === "completed") {
+        console.log("✅ ICE gathering completed");
       }
     };
 
     pc.onicegatheringstatechange = () => {
       console.log("ICE gathering state:", pc.iceGatheringState);
+      if (pc.iceGatheringState === "complete") {
+        console.log("✅ ICE gathering completed");
+      }
     };
 
     pc.onsignalingstatechange = () => {
       console.log("Signaling state:", pc.signalingState);
+      if (pc.signalingState === "stable") {
+        console.log("✅ Signaling state is stable");
+      }
     };
 
     // Enhanced track handling
@@ -525,6 +585,21 @@ export default function Dashboard({ onLogout }) {
         }
       });
 
+      // Handle incoming data channels
+      pc.ondatachannel = (event) => {
+        console.log("Incoming data channel:", event.channel.label);
+        const dataChannel = event.channel;
+        dataChannel.onopen = () => {
+          console.log("✅ Incoming data channel opened");
+        };
+        dataChannel.onmessage = (event) => {
+          console.log("Incoming data channel message:", event.data);
+          if (event.data === "ping") {
+            dataChannel.send("pong");
+          }
+        };
+      };
+
       // Set remote description
       console.log("Setting remote description...");
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
@@ -614,6 +689,12 @@ export default function Dashboard({ onLogout }) {
     setConnectionState("new");
     setIceConnectionState("new");
 
+    // Clear connection timeout
+    if (connectionTimeoutRef.current) {
+      clearTimeout(connectionTimeoutRef.current);
+      connectionTimeoutRef.current = null;
+    }
+
     // Clean up peer connection
     if (pcRef.current) {
       console.log("Closing peer connection...");
@@ -668,6 +749,33 @@ export default function Dashboard({ onLogout }) {
         });
     } else {
       console.log("No remote video available to play");
+    }
+  };
+
+  // Manual connection restart function
+  const restartConnection = () => {
+    console.log("Manually restarting connection...");
+    if (pcRef.current) {
+      try {
+        // Try to restart ICE
+        if (pcRef.current.restartIce) {
+          console.log("Restarting ICE...");
+          pcRef.current.restartIce();
+        }
+
+        // If still stuck, recreate the connection
+        setTimeout(() => {
+          if (pcRef.current && pcRef.current.connectionState === "connecting") {
+            console.log("Connection still stuck, recreating...");
+            cleanupCall();
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              startVideoCall(ws);
+            }
+          }
+        }, 5000);
+      } catch (err) {
+        console.error("Error restarting connection:", err);
+      }
     }
   };
 
@@ -887,7 +995,15 @@ export default function Dashboard({ onLogout }) {
             <div>Connection State: {connectionState}</div>
             <div>ICE State: {iceConnectionState}</div>
             <div>In Call: {inCall ? "✅ Yes" : "❌ No"}</div>
-            <div style={{ marginTop: "10px" }}>
+            <div>
+              Signaling State:{" "}
+              {pcRef.current ? pcRef.current.signalingState : "N/A"}
+            </div>
+            <div>
+              ICE Gathering:{" "}
+              {pcRef.current ? pcRef.current.iceGatheringState : "N/A"}
+            </div>
+            <div style={{ marginTop: "10px", display: "flex", gap: "5px" }}>
               <button
                 onClick={forcePlayVideo}
                 style={{
@@ -901,6 +1017,20 @@ export default function Dashboard({ onLogout }) {
                 }}
               >
                 Force Play Video
+              </button>
+              <button
+                onClick={restartConnection}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: "11px",
+                  backgroundColor: "#ff9800",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Restart Connection
               </button>
             </div>
           </div>
