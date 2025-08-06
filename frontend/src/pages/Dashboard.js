@@ -853,7 +853,7 @@ export default function Dashboard({ onLogout }) {
 
   // Force ICE restart function
   const startVideo = () => {
-    document.querySelector(".display").style.display = "flex !important";
+    document.getElementById("videoMain").classList.remove("display");
     setShowStartVideoButton(false); // Hide the button when clicked
     if (pcRef.current) {
       try {
@@ -1066,7 +1066,7 @@ export default function Dashboard({ onLogout }) {
         )}
 
         {/* Video area */}
-        <div className="video-area pip-area display">
+        <div className="video-area pip-area display" id="videoMain">
           <div className="remote-video-container">
             <video
               ref={remoteVideoRef}
