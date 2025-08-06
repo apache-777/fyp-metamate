@@ -1146,29 +1146,20 @@ export default function Dashboard({ onLogout }) {
           <div className="in-call-indicator">You are in a video call</div>
         )}
 
-        {/* Chat */}
+        {/* Chat Messages */}
+        <div className="chat-messages display convoArea">
+          {chat.map((msg, i) => (
+            <div key={i} className={msg.from === "me" ? "my-msg" : "peer-msg"}>
+              {msg.text}
+            </div>
+          ))}
+        </div>
+
+        {/* Chat Input */}
         <div className="chat-area display convoArea">
-          <div className="chat-messages display">
-            {chat.map((msg, i) => (
-              <div
-                key={i}
-                className={msg.from === "me" ? "my-msg" : "peer-msg"}
-              >
-                {msg.text}
-              </div>
-            ))}
-          </div>
           <input
             value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              // Show chat messages when user starts typing
-              if (e.target.value.length > 0) {
-                document
-                  .querySelector(".chat-messages")
-                  .classList.remove("display");
-              }
-            }}
+            onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a message"
           />
           <button onClick={sendMessage}>Send</button>
