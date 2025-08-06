@@ -31,6 +31,7 @@ export default function Dashboard({ onLogout }) {
   const connectionTimeoutRef = useRef(null);
   const [iceCandidatesSent, setIceCandidatesSent] = useState(0);
   const [iceCandidatesReceived, setIceCandidatesReceived] = useState(0);
+  const [showStartVideoButton, setShowStartVideoButton] = useState(true);
 
   const navigate = useNavigate();
 
@@ -753,6 +754,7 @@ export default function Dashboard({ onLogout }) {
     setIceConnectionState("new");
     setIceCandidatesSent(0);
     setIceCandidatesReceived(0);
+    setShowStartVideoButton(true); // Reset button visibility for next call
 
     // Clear connection timeout
     if (connectionTimeoutRef.current) {
@@ -803,6 +805,7 @@ export default function Dashboard({ onLogout }) {
   // Force ICE restart function
   const startVideo = () => {
     console.log("Forcing ICE restart...");
+    setShowStartVideoButton(false); // Hide the button when clicked
     if (pcRef.current) {
       try {
         // Create a new offer with ICE restart
@@ -1032,7 +1035,7 @@ export default function Dashboard({ onLogout }) {
         </div>
 
         {/* Debug information */}
-        {connected && (
+        {connected && showStartVideoButton && (
           <div
             style={{
               marginTop: "10px",
