@@ -31,6 +31,7 @@ export default function Dashboard({ onLogout }) {
   const connectionTimeoutRef = useRef(null);
   const [iceCandidatesSent, setIceCandidatesSent] = useState(0);
   const [iceCandidatesReceived, setIceCandidatesReceived] = useState(0);
+  const autoIceRestartRef = useRef(false);
 
   const navigate = useNavigate();
 
@@ -161,6 +162,16 @@ export default function Dashboard({ onLogout }) {
         console.log("✅ WebRTC connection established successfully!");
         setStatus("Connected - Video call active");
         setInCall(true);
+
+        // Auto ICE restart for caller only, once per call
+        if (isCallerRef.current && !autoIceRestartRef.current) {
+          console.log("🔄 Scheduling automatic ICE restart in 2 seconds...");
+          autoIceRestartRef.current = true;
+          setTimeout(() => {
+            console.log("🔄 Executing automatic ICE restart...");
+            forceIceRestart();
+          }, 2000);
+        }
       } else if (pc.connectionState === "failed") {
         console.error("❌ WebRTC connection failed");
         setStatus("Connection failed - please try again");
@@ -439,6 +450,7 @@ export default function Dashboard({ onLogout }) {
     setInCall(false);
     setConnectionState("new");
     setIceConnectionState("new");
+    autoIceRestartRef.current = false;
 
     // Clean up any existing resources
     cleanupCall();
@@ -753,6 +765,7 @@ export default function Dashboard({ onLogout }) {
     setIceConnectionState("new");
     setIceCandidatesSent(0);
     setIceCandidatesReceived(0);
+    autoIceRestartRef.current = false;
 
     // Clear connection timeout
     if (connectionTimeoutRef.current) {
@@ -1214,6 +1227,10 @@ export default function Dashboard({ onLogout }) {
             </div>
             <div>ICE Candidates Sent: {iceCandidatesSent}</div>
             <div>ICE Candidates Received: {iceCandidatesReceived}</div>
+            <div>
+              Auto ICE Restart:{" "}
+              {autoIceRestartRef.current ? "✅ Scheduled" : "❌ Not Scheduled"}
+            </div>
             <div
               style={{
                 marginTop: "10px",
