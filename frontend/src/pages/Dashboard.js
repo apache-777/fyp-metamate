@@ -971,8 +971,15 @@ export default function Dashboard({ onLogout }) {
               }}
               style={{
                 backgroundColor: "#f44336",
+                background: "#f44336",
                 color: "white",
                 border: "none",
+                borderRadius: "12px",
+                padding: "0.8rem 1rem",
+                fontSize: "1rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                marginTop: "0.5rem",
               }}
             >
               Stop
@@ -993,8 +1000,15 @@ export default function Dashboard({ onLogout }) {
               onClick={startVideo}
               style={{
                 backgroundColor: "#90ee90",
+                background: "#90ee90",
                 color: "#333",
                 border: "none",
+                borderRadius: "12px",
+                padding: "0.8rem 1rem",
+                fontSize: "1rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                marginTop: "0.5rem",
               }}
             >
               Start Video Call
