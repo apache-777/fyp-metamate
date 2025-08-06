@@ -578,6 +578,16 @@ export default function Dashboard({ onLogout }) {
       setSubtitle(data.text);
     }
 
+    if (data.type === "show_video_area") {
+      console.log("Received show video area command from peer");
+      document.getElementById("videoMain").classList.remove("display");
+    }
+
+    if (data.type === "hide_video_area") {
+      console.log("Received hide video area command from peer");
+      document.getElementById("videoMain").classList.add("display");
+    }
+
     if (data.type === "partner_disconnected") {
       console.log("Partner disconnected");
       setStatus("Partner disconnected.");
@@ -855,6 +865,11 @@ export default function Dashboard({ onLogout }) {
   const startVideo = () => {
     document.getElementById("videoMain").classList.remove("display");
     setShowStartVideoButton(false); // Hide the button when clicked
+
+    // Send message to peer to show their video area
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "show_video_area" }));
+    }
     if (pcRef.current) {
       try {
         // Create a new offer with ICE restart
@@ -1002,6 +1017,10 @@ export default function Dashboard({ onLogout }) {
               onClick={() => {
                 document.getElementById("videoMain").classList.add("display");
                 console.log("Stopping video call...");
+                // Send message to peer to hide their video area
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({ type: "hide_video_area" }));
+                }
                 // Notify partner about disconnection
                 if (ws && ws.readyState === WebSocket.OPEN) {
                   ws.send(JSON.stringify({ type: "partner_disconnected" }));
