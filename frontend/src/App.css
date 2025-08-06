@@ -1085,7 +1085,7 @@ body {
   top: 1.2rem;
   right: 1.2rem;
   width: 160px;
-  height: 120px;
+  height: 150px;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
   border: 2.5px solid #4fc3f7;
@@ -1116,21 +1116,21 @@ body {
   .pip-area {
     display: flex;
     flex-direction: row;
-    gap: 1rem;
+    gap: 1.5rem;
     height: 50vh;
     min-height: 300px;
     max-height: 60vh;
   }
 
   .remote-video-container {
-    width: 50%;
+    flex: 1;
     height: 100%;
     position: static;
     order: 1;
   }
 
   .local-video-container {
-    width: 50%;
+    flex: 1;
     height: 100%;
     position: static;
     order: 2;
