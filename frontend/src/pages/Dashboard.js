@@ -31,7 +31,6 @@ export default function Dashboard({ onLogout }) {
   const connectionTimeoutRef = useRef(null);
   const [iceCandidatesSent, setIceCandidatesSent] = useState(0);
   const [iceCandidatesReceived, setIceCandidatesReceived] = useState(0);
-  const autoIceRestartDoneRef = useRef(false);
 
   const navigate = useNavigate();
 
@@ -440,9 +439,6 @@ export default function Dashboard({ onLogout }) {
     setInCall(false);
     setConnectionState("new");
     setIceConnectionState("new");
-    setIceCandidatesSent(0);
-    setIceCandidatesReceived(0);
-    autoIceRestartDoneRef.current = false;
 
     // Clean up any existing resources
     cleanupCall();
@@ -986,19 +982,6 @@ export default function Dashboard({ onLogout }) {
       }, 100);
     }
   };
-
-  // Auto ICE restart when status becomes "In call - Video active"
-  useEffect(() => {
-    if (status === "In call - Video active" && !autoIceRestartDoneRef.current) {
-      const timer = setTimeout(() => {
-        console.log("Auto-triggering ICE restart after 2 seconds...");
-        autoIceRestartDoneRef.current = true;
-        forceIceRestart();
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [status]);
 
   // Cleanup on component unmount
   useEffect(() => {
