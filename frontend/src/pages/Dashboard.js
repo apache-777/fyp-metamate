@@ -800,81 +800,8 @@ export default function Dashboard({ onLogout }) {
     console.log("✅ Call cleanup completed");
   };
 
-  // Manual video play function for debugging
-  const forcePlayVideo = () => {
-    if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
-      console.log("Manually forcing video play...");
-      console.log("Video element state:");
-      console.log("- readyState:", remoteVideoRef.current.readyState);
-      console.log("- paused:", remoteVideoRef.current.paused);
-      console.log("- ended:", remoteVideoRef.current.ended);
-      console.log("- muted:", remoteVideoRef.current.muted);
-      console.log("- srcObject:", remoteVideoRef.current.srcObject);
-
-      // Force video to load and play
-      remoteVideoRef.current.load();
-
-      remoteVideoRef.current
-        .play()
-        .then(() => {
-          console.log("✅ Manual video play successful");
-        })
-        .catch((e) => {
-          console.error("❌ Manual video play failed:", e);
-          console.log("Error details:", e.name, e.message);
-
-          // Try alternative approach
-          setTimeout(() => {
-            console.log("Trying alternative play method...");
-            remoteVideoRef.current.currentTime = 0;
-            remoteVideoRef.current.play().catch((e2) => {
-              console.error("Alternative method also failed:", e2);
-            });
-          }, 100);
-        });
-    } else {
-      console.log("No remote video available to play");
-      console.log("remoteVideoRef.current:", remoteVideoRef.current);
-      console.log("srcObject:", remoteVideoRef.current?.srcObject);
-    }
-  };
-
-  // Manual connection restart function
-  const restartConnection = () => {
-    console.log("Manually restarting connection...");
-    if (pcRef.current) {
-      try {
-        // Try to restart ICE
-        if (pcRef.current.restartIce) {
-          console.log("Restarting ICE...");
-          pcRef.current.restartIce();
-        }
-
-        // Force connection state check
-        console.log(
-          "Current ICE connection state:",
-          pcRef.current.iceConnectionState
-        );
-        console.log("Current connection state:", pcRef.current.connectionState);
-
-        // If still stuck, recreate the connection
-        setTimeout(() => {
-          if (pcRef.current && pcRef.current.connectionState === "connecting") {
-            console.log("Connection still stuck, recreating...");
-            cleanupCall();
-            if (ws && ws.readyState === WebSocket.OPEN) {
-              startVideoCall(ws);
-            }
-          }
-        }, 5000);
-      } catch (err) {
-        console.error("Error restarting connection:", err);
-      }
-    }
-  };
-
   // Force ICE restart function
-  const forceIceRestart = () => {
+  const startVideo = () => {
     console.log("Forcing ICE restart...");
     if (pcRef.current) {
       try {
@@ -897,89 +824,6 @@ export default function Dashboard({ onLogout }) {
       } catch (err) {
         console.error("Error in forceIceRestart:", err);
       }
-    }
-  };
-
-  // Test connection function
-  const testConnection = () => {
-    console.log("Testing connection...");
-    if (pcRef.current) {
-      console.log("Connection state:", pcRef.current.connectionState);
-      console.log("ICE connection state:", pcRef.current.iceConnectionState);
-      console.log("Signaling state:", pcRef.current.signalingState);
-      console.log("ICE gathering state:", pcRef.current.iceGatheringState);
-
-      // Check if we have any remote candidates
-      const stats = pcRef.current.getStats();
-      stats.then((results) => {
-        results.forEach((report) => {
-          if (
-            report.type === "candidate-pair" &&
-            report.state === "succeeded"
-          ) {
-            console.log("✅ Found successful candidate pair:", report);
-          }
-        });
-      });
-    }
-  };
-
-  // Check video stream function
-  const checkVideoStream = () => {
-    console.log("Checking video stream...");
-    if (remoteStreamRef.current) {
-      const tracks = remoteStreamRef.current.getTracks();
-      console.log("Remote stream tracks:", tracks);
-      tracks.forEach((track) => {
-        console.log(`Track ${track.kind}:`, {
-          enabled: track.enabled,
-          readyState: track.readyState,
-          muted: track.muted,
-          id: track.id,
-        });
-      });
-    }
-
-    if (remoteVideoRef.current) {
-      console.log("Video element properties:");
-      console.log("- readyState:", remoteVideoRef.current.readyState);
-      console.log("- paused:", remoteVideoRef.current.paused);
-      console.log("- ended:", remoteVideoRef.current.ended);
-      console.log("- muted:", remoteVideoRef.current.muted);
-      console.log("- srcObject:", remoteVideoRef.current.srcObject);
-      console.log("- videoWidth:", remoteVideoRef.current.videoWidth);
-      console.log("- videoHeight:", remoteVideoRef.current.videoHeight);
-    }
-  };
-
-  // Recreate video element function
-  const recreateVideoElement = () => {
-    console.log("Recreating video element...");
-    if (remoteVideoRef.current && remoteStreamRef.current) {
-      // Store the current stream
-      const currentStream = remoteStreamRef.current;
-
-      // Clear the current video element
-      remoteVideoRef.current.srcObject = null;
-
-      // Recreate the video element
-      setTimeout(() => {
-        if (remoteVideoRef.current) {
-          console.log("Setting new srcObject to recreated video element");
-          remoteVideoRef.current.srcObject = currentStream;
-          remoteVideoRef.current.load();
-
-          // Try to play
-          remoteVideoRef.current
-            .play()
-            .then(() => {
-              console.log("✅ Video playing after recreation");
-            })
-            .catch((e) => {
-              console.error("Failed to play after recreation:", e);
-            });
-        }
-      }, 100);
     }
   };
 
@@ -1183,132 +1027,26 @@ export default function Dashboard({ onLogout }) {
         {connected && (
           <div
             style={{
-              margin: "10px 0",
-              padding: "10px",
-              backgroundColor: "rgba(0,0,0,0.1)",
-              borderRadius: "8px",
-              fontSize: "12px",
-              textAlign: "left",
+              marginTop: "10px",
+              display: "flex",
+              gap: "5px",
+              flexWrap: "wrap",
             }}
           >
-            <div>
-              <strong>Debug Info:</strong>
-            </div>
-            <div>
-              Local Stream: {localStreamRef.current ? "✅ Active" : "❌ None"}
-            </div>
-            <div>
-              Remote Stream: {remoteStreamRef.current ? "✅ Active" : "❌ None"}
-            </div>
-            <div>
-              Peer Connection: {pcRef.current ? "✅ Active" : "❌ None"}
-            </div>
-            <div>Connection State: {connectionState}</div>
-            <div>ICE State: {iceConnectionState}</div>
-            <div>In Call: {inCall ? "✅ Yes" : "❌ No"}</div>
-            <div>
-              Signaling State:{" "}
-              {pcRef.current ? pcRef.current.signalingState : "N/A"}
-            </div>
-            <div>
-              ICE Gathering:{" "}
-              {pcRef.current ? pcRef.current.iceGatheringState : "N/A"}
-            </div>
-            <div>ICE Candidates Sent: {iceCandidatesSent}</div>
-            <div>ICE Candidates Received: {iceCandidatesReceived}</div>
-            <div
+            <button
+              onClick={startVideo}
               style={{
-                marginTop: "10px",
-                display: "flex",
-                gap: "5px",
-                flexWrap: "wrap",
+                padding: "5px 10px",
+                fontSize: "11px",
+                backgroundColor: "#f44336",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
               }}
             >
-              <button
-                onClick={forcePlayVideo}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: "11px",
-                  backgroundColor: "#4fc3f7",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Force Play Video
-              </button>
-              <button
-                onClick={restartConnection}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: "11px",
-                  backgroundColor: "#ff9800",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Restart Connection
-              </button>
-              <button
-                onClick={forceIceRestart}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: "11px",
-                  backgroundColor: "#f44336",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Start Video
-              </button>
-              <button
-                onClick={testConnection}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: "11px",
-                  backgroundColor: "#4caf50",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Test Connection
-              </button>
-              <button
-                onClick={checkVideoStream}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: "11px",
-                  backgroundColor: "#9c27b0",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Check Video Stream
-              </button>
-              <button
-                onClick={recreateVideoElement}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: "11px",
-                  backgroundColor: "#ff5722",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Recreate Video
-              </button>
-            </div>
+              Start Video
+            </button>
           </div>
         )}
 
