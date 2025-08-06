@@ -34,6 +34,8 @@ export default function Dashboard({ onLogout }) {
   const [showStartVideoButton, setShowStartVideoButton] = useState(true);
   const [pendingMatchmaking, setPendingMatchmaking] = useState(false);
 
+  var otherUsername = null;
+
   const navigate = useNavigate();
 
   // Check WebRTC support
@@ -316,9 +318,7 @@ export default function Dashboard({ onLogout }) {
             );
             setInCall(true);
             setStatus(
-              peerUsername
-                ? `Matched with ${peerUsername} - Press button to start video call`
-                : "Matched with peer - Press button to start video call"
+              `Matched with ${otherUsername} - Press button to start video call`
             );
           };
 
@@ -539,6 +539,7 @@ export default function Dashboard({ onLogout }) {
       console.log("📥 Received peer username:", data.username);
       console.log("📊 Current status before username update:", status);
       setPeerUsername(data.username);
+      otherUsername = data.username;
       // Update status immediately when we receive the username (if connected)
       if (connected) {
         console.log("📝 Updating status with peer username:", data.username);
@@ -584,6 +585,7 @@ export default function Dashboard({ onLogout }) {
       setSubtitle("");
       setPeerUsername("");
       cleanupCall();
+      otherUsername = null;
     }
   }
 
