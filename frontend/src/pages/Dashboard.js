@@ -173,64 +173,14 @@ export default function Dashboard({ onLogout }) {
         console.log("🔄 WebRTC connecting...");
         setStatus("Connecting to peer...");
 
-        // Set a timeout for connection with automatic ICE restart
+        // Set a timeout for connection
         connectionTimeoutRef.current = setTimeout(() => {
           if (pc.connectionState === "connecting") {
-            console.log(
-              "🔄 Connection taking too long, attempting automatic ICE restart..."
-            );
-            setStatus("Connection slow - restarting ICE...");
-
-            // Try automatic ICE restart
-            if (pc.restartIce) {
-              console.log("🔄 Automatic ICE restart triggered");
-              pc.restartIce();
-
-              // If still stuck after ICE restart, try force ICE restart
-              setTimeout(() => {
-                if (pc.connectionState === "connecting") {
-                  console.log(
-                    "🔄 Still connecting, trying force ICE restart..."
-                  );
-                  setStatus("Still connecting - forcing ICE restart...");
-
-                  // Create a new offer with ICE restart
-                  pc.createOffer({ iceRestart: true })
-                    .then(async (offer) => {
-                      console.log("🔄 Force ICE restart offer created");
-                      await pc.setLocalDescription(offer);
-
-                      // Send the new offer
-                      if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({ type: "offer", offer }));
-                        console.log("🔄 Force ICE restart offer sent");
-                      }
-                    })
-                    .catch((err) => {
-                      console.error(
-                        "❌ Error in automatic force ICE restart:",
-                        err
-                      );
-                    });
-                }
-              }, 10000); // Wait 10 seconds after ICE restart
-            }
-          }
-        }, 5000); // 15 seconds timeout before first ICE restart
-
-        // Final fallback - if still connecting after 45 seconds, restart everything
-        setTimeout(() => {
-          if (pc.connectionState === "connecting") {
-            console.log(
-              "🔄 Connection still stuck after all attempts, restarting connection..."
-            );
-            setStatus("Connection failed - restarting...");
+            console.error("❌ Connection timeout - taking too long to connect");
+            setStatus("Connection timeout - please try again");
             cleanupCall();
-            if (ws && ws.readyState === WebSocket.OPEN) {
-              startVideoCall(ws);
-            }
           }
-        }, 45000); // 45 seconds total timeout
+        }, 30000); // 30 seconds timeout
       }
     };
 
@@ -252,22 +202,6 @@ export default function Dashboard({ onLogout }) {
       } else if (pc.iceConnectionState === "checking") {
         console.log("🔄 ICE checking - finding best connection...");
         setStatus("Finding best connection...");
-
-        // Set a timeout for ICE checking state
-        setTimeout(() => {
-          if (pc.iceConnectionState === "checking") {
-            console.log(
-              "🔄 ICE checking taking too long, attempting automatic restart..."
-            );
-            setStatus("ICE checking slow - restarting...");
-
-            // Try automatic ICE restart
-            if (pc.restartIce) {
-              console.log("🔄 Automatic ICE restart from checking state");
-              pc.restartIce();
-            }
-          }
-        }, 12000); // 12 seconds timeout for ICE checking
       } else if (pc.iceConnectionState === "completed") {
         console.log("✅ ICE gathering completed");
       }
@@ -277,22 +211,6 @@ export default function Dashboard({ onLogout }) {
       console.log("ICE gathering state:", pc.iceGatheringState);
       if (pc.iceGatheringState === "complete") {
         console.log("✅ ICE gathering completed");
-      } else if (pc.iceGatheringState === "gathering") {
-        // Set a timeout for ICE gathering state
-        setTimeout(() => {
-          if (pc.iceGatheringState === "gathering") {
-            console.log(
-              "🔄 ICE gathering taking too long, attempting automatic restart..."
-            );
-            setStatus("ICE gathering slow - restarting...");
-
-            // Try automatic ICE restart
-            if (pc.restartIce) {
-              console.log("🔄 Automatic ICE restart from gathering state");
-              pc.restartIce();
-            }
-          }
-        }, 10000); // 10 seconds timeout for ICE gathering
       }
     };
 
@@ -1296,12 +1214,6 @@ export default function Dashboard({ onLogout }) {
             </div>
             <div>ICE Candidates Sent: {iceCandidatesSent}</div>
             <div>ICE Candidates Received: {iceCandidatesReceived}</div>
-            <div style={{ marginTop: "5px", fontSize: "11px", color: "#666" }}>
-              <em>
-                Auto ICE restart enabled - will trigger automatically if
-                connection is slow
-              </em>
-            </div>
             <div
               style={{
                 marginTop: "10px",
