@@ -469,11 +469,11 @@ export default function Dashboard({ onLogout }) {
       return;
     }
     setShowSubtitle(true);
-    // if (!("webkitSpeechRecognition" in window)) {
-    //   alert("Speech recognition not supported");
-    //   return;
-    // }
-    const recognition = new window.SpeechRecognition();
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Speech recognition not supported");
+      return;
+    }
+    const recognition = new window.webkitSpeechRecognition();
     recognition.lang = "en-US";
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
