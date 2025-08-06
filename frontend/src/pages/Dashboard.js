@@ -946,7 +946,7 @@ export default function Dashboard({ onLogout }) {
           }}
         >
           {!connected && (
-            <button onClick={startMatchmaking}>Start Match</button>
+            <button onClick={startMatchmaking}>Start Matching</button>
           )}
           {connected && (
             <button
@@ -969,6 +969,11 @@ export default function Dashboard({ onLogout }) {
                 setSubtitle("");
                 setInCall(false);
               }}
+              style={{
+                backgroundColor: "#f44336",
+                color: "white",
+                border: "none",
+              }}
             >
               Stop
             </button>
@@ -984,7 +989,16 @@ export default function Dashboard({ onLogout }) {
               marginTop: "1rem",
             }}
           >
-            <button onClick={startVideo}>Start Video Call</button>
+            <button
+              onClick={startVideo}
+              style={{
+                backgroundColor: "#90ee90",
+                color: "#333",
+                border: "none",
+              }}
+            >
+              Start Video Call
+            </button>
           </div>
         )}
 
