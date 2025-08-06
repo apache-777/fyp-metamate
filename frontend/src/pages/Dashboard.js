@@ -539,8 +539,8 @@ export default function Dashboard({ onLogout }) {
       console.log("📥 Received peer username:", data.username);
       console.log("📊 Current status before username update:", status);
       setPeerUsername(data.username);
-      // Update status if we're already showing the matched message
-      if (status.includes("Matched with")) {
+      // Update status immediately when we receive the username (if connected)
+      if (connected) {
         console.log("📝 Updating status with peer username:", data.username);
         setStatus(
           `Matched with ${data.username} - Press button to start video call`
