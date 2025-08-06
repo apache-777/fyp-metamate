@@ -566,6 +566,8 @@ export default function Dashboard({ onLogout }) {
 
     if (data.type === "chat") {
       setChat((prev) => [...prev, { from: "peer", text: data.text }]);
+      // Show chat messages when receiving a message from peer
+      document.querySelector(".chat-messages").classList.remove("display");
     }
 
     if (data.type === "tts") {
@@ -577,11 +579,6 @@ export default function Dashboard({ onLogout }) {
     if (data.type === "stt") {
       setSubtitle(data.text);
     }
-
-    // if (data.type === "show_video_area") {
-    //   console.log("Received show video area command from peer");
-    //   document.getElementById("videoMain").classList.remove("display");
-    // }
 
     if (data.type === "hide_video_area") {
       console.log("Received hide video area command from peer");
@@ -1151,7 +1148,7 @@ export default function Dashboard({ onLogout }) {
 
         {/* Chat */}
         <div className="chat-area display convoArea">
-          <div className="chat-messages">
+          <div className="chat-messages display">
             {chat.map((msg, i) => (
               <div
                 key={i}
@@ -1163,7 +1160,15 @@ export default function Dashboard({ onLogout }) {
           </div>
           <input
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              // Show chat messages when user starts typing
+              if (e.target.value.length > 0) {
+                document
+                  .querySelector(".chat-messages")
+                  .classList.remove("display");
+              }
+            }}
             placeholder="Type a message"
           />
           <button onClick={sendMessage}>Send</button>
