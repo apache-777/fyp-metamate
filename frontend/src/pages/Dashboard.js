@@ -867,9 +867,9 @@ export default function Dashboard({ onLogout }) {
     setShowStartVideoButton(false); // Hide the button when clicked
 
     // Send message to peer to show their video area
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: "show_video_area" }));
-    }
+    // if (ws && ws.readyState === WebSocket.OPEN) {
+    //   ws.send(JSON.stringify({ type: "show_video_area" }));
+    // }
     if (pcRef.current) {
       try {
         // Create a new offer with ICE restart
