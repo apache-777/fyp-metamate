@@ -1120,6 +1120,7 @@ body {
     height: 50vh;
     min-height: 300px;
     max-height: 60vh;
+    background: transparent;
   }
 
   .remote-video-container {
@@ -1166,6 +1167,7 @@ body {
     height: auto;
     min-height: auto;
     max-height: none;
+    background: transparent;
   }
 
   .remote-video-container {
