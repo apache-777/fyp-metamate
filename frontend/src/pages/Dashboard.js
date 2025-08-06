@@ -302,7 +302,11 @@ export default function Dashboard({ onLogout }) {
           remoteVideoRef.current.onplay = () => {
             console.log("✅ Remote video started playing");
             setInCall(true);
-            setStatus("Matched with peer - Press button to start video call");
+            setStatus(
+              peerUsername
+                ? `Matched with ${peerUsername} - Press button to start video call`
+                : "Matched with peer - Press button to start video call"
+            );
           };
 
           remoteVideoRef.current.onerror = (e) => {
