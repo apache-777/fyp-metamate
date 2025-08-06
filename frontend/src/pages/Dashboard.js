@@ -172,7 +172,7 @@ export default function Dashboard({ onLogout }) {
         setInCall(false);
       } else if (pc.connectionState === "connecting") {
         console.log("🔄 WebRTC connecting...");
-        setStatus("Connecting to peer...");
+        setStatus("Connecting...");
 
         // Set a timeout for connection
         connectionTimeoutRef.current = setTimeout(() => {
@@ -202,7 +202,7 @@ export default function Dashboard({ onLogout }) {
         }
       } else if (pc.iceConnectionState === "checking") {
         console.log("🔄 ICE checking - finding best connection...");
-        setStatus("Finding best connection...");
+        setStatus("Connecting...");
       } else if (pc.iceConnectionState === "completed") {
         console.log("✅ ICE gathering completed");
       }
@@ -611,7 +611,7 @@ export default function Dashboard({ onLogout }) {
 
   const handleReceiveOffer = async (offer, socket) => {
     console.log("📥 Received offer, creating answer...");
-    setStatus("Received offer, creating answer...");
+    setStatus("Connecting...");
     isCallerRef.current = false;
 
     try {
