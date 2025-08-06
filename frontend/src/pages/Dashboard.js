@@ -32,6 +32,7 @@ export default function Dashboard({ onLogout }) {
   const [iceCandidatesSent, setIceCandidatesSent] = useState(0);
   const [iceCandidatesReceived, setIceCandidatesReceived] = useState(0);
   const [showStartVideoButton, setShowStartVideoButton] = useState(true);
+  const [pendingMatchmaking, setPendingMatchmaking] = useState(false);
 
   const navigate = useNavigate();
 
@@ -68,8 +69,16 @@ export default function Dashboard({ onLogout }) {
       if (auth.currentUser) {
         const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
         if (userDoc.exists()) {
-          setUsername(userDoc.data().username);
+          const fetchedUsername = userDoc.data().username;
+          setUsername(fetchedUsername);
           if (userDoc.data().avatar) setAvatar(userDoc.data().avatar);
+
+          // If matchmaking was pending, start it now
+          if (pendingMatchmaking && fetchedUsername) {
+            console.log("Username loaded, starting pending matchmaking");
+            setPendingMatchmaking(false);
+            setTimeout(() => startMatchmaking(), 100); // Small delay to ensure state is updated
+          }
         }
       }
     };
@@ -77,7 +86,7 @@ export default function Dashboard({ onLogout }) {
 
     // Check WebRTC support on component mount
     checkWebRTCSupport();
-  }, []);
+  }, [pendingMatchmaking]);
 
   // Enhanced WebRTC configuration
   const getRTCConfiguration = () => ({
@@ -429,6 +438,14 @@ export default function Dashboard({ onLogout }) {
     // Check WebRTC support first
     if (!checkWebRTCSupport()) {
       console.error("WebRTC not supported, cannot start matchmaking");
+      return;
+    }
+
+    // Check if username is loaded
+    if (!username) {
+      console.error("Username not loaded yet, cannot start matchmaking");
+      setStatus("Loading user data...");
+      setPendingMatchmaking(true);
       return;
     }
 
