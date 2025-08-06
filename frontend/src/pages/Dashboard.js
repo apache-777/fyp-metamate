@@ -1000,6 +1000,7 @@ export default function Dashboard({ onLogout }) {
           {connected && (
             <button
               onClick={() => {
+                document.getElementById("videoMain").classList.add("display");
                 console.log("Stopping video call...");
                 // Notify partner about disconnection
                 if (ws && ws.readyState === WebSocket.OPEN) {
