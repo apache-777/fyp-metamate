@@ -473,7 +473,7 @@ export default function Dashboard({ onLogout }) {
     //   alert("Speech recognition not supported");
     //   return;
     // }
-    const recognition = new window.webkitSpeechRecognition();
+    const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
