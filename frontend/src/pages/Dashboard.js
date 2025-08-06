@@ -2,7 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { BACKEND_URL, WS_URL } from "../config";
+import AgoraRTC from "agora-rtc-sdk-ng";
+
+const BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+const WS_URL = process.env.REACT_APP_WS_URL || "ws://localhost:5000";
+const AGORA_APP_ID =
+  process.env.REACT_APP_AGORA_APP_ID || "351aac62ef584247ae1b29ba21a82624";
 
 export default function Dashboard({ onLogout }) {
   const [connected, setConnected] = useState(false);
@@ -13,11 +19,6 @@ export default function Dashboard({ onLogout }) {
   const [ttsText, setTtsText] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [inCall, setInCall] = useState(false);
-  const localVideoRef = useRef();
-  const remoteVideoRef = useRef();
-  const pcRef = useRef();
-  const localStreamRef = useRef();
-  const isCallerRef = useRef(false);
   const [showSubtitle, setShowSubtitle] = useState(false);
   const [username, setUsername] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -25,6 +26,13 @@ export default function Dashboard({ onLogout }) {
     "https://i.ibb.co/2kR8bQn/avatar-placeholder.png"
   );
   const [peerUsername, setPeerUsername] = useState("");
+
+  // Agora refs
+  const agoraEngine = useRef(null);
+  const localAudioTrack = useRef(null);
+  const localVideoTrack = useRef(null);
+  const localVideoRef = useRef();
+  const remoteVideoRef = useRef();
 
   const navigate = useNavigate();
 
@@ -40,6 +48,153 @@ export default function Dashboard({ onLogout }) {
     };
     fetchUsername();
   }, []);
+
+  // Initialize Agora client
+  const initializeAgora = async () => {
+    try {
+      // Create Agora client
+      agoraEngine.current = AgoraRTC.createClient({
+        mode: "rtc",
+        codec: "vp8",
+      });
+
+      // Set up event handlers
+      agoraEngine.current.on("user-published", handleUserPublished);
+      agoraEngine.current.on("user-unpublished", handleUserUnpublished);
+      agoraEngine.current.on("user-joined", handleUserJoined);
+      agoraEngine.current.on("user-left", handleUserLeft);
+
+      console.log("Agora client initialized successfully");
+    } catch (error) {
+      console.error("Error initializing Agora client:", error);
+      setStatus("Failed to initialize video client");
+    }
+  };
+
+  // Handle when a user publishes their stream
+  const handleUserPublished = async (user, mediaType) => {
+    console.log("User published:", user.uid, mediaType);
+
+    // Subscribe to the remote user
+    await agoraEngine.current.subscribe(user, mediaType);
+
+    if (mediaType === "video") {
+      // Display remote video
+      if (remoteVideoRef.current) {
+        user.videoTrack.play(remoteVideoRef.current);
+      }
+    }
+    if (mediaType === "audio") {
+      // Play remote audio
+      user.audioTrack.play();
+    }
+  };
+
+  // Handle when a user unpublishes their stream
+  const handleUserUnpublished = (user) => {
+    console.log("User unpublished:", user.uid);
+  };
+
+  // Handle when a user joins the channel
+  const handleUserJoined = (user) => {
+    console.log("User joined:", user.uid);
+    setStatus("Peer joined the call");
+  };
+
+  // Handle when a user leaves the channel
+  const handleUserLeft = (user) => {
+    console.log("User left:", user.uid);
+    setStatus("Peer left the call");
+    setInCall(false);
+    setPeerUsername("");
+
+    // Clear remote video
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
+  };
+
+  // Join Agora channel
+  const joinChannel = async (channelName, uid) => {
+    try {
+      console.log("Joining Agora channel:", channelName);
+      setStatus("Joining video call...");
+
+      // Join the channel
+      await agoraEngine.current.join(AGORA_APP_ID, channelName, null, uid);
+      console.log("Successfully joined Agora channel");
+
+      // Create and publish local tracks
+      await createAndPublishTracks();
+
+      setInCall(true);
+      setStatus("In call");
+    } catch (error) {
+      console.error("Error joining Agora channel:", error);
+      setStatus("Failed to join video call");
+    }
+  };
+
+  // Create and publish local audio/video tracks
+  const createAndPublishTracks = async () => {
+    try {
+      // Create local audio track
+      localAudioTrack.current = await AgoraRTC.createMicrophoneAudioTrack();
+
+      // Create local video track
+      localVideoTrack.current = await AgoraRTC.createCameraVideoTrack();
+
+      // Play local video
+      if (localVideoRef.current) {
+        localVideoTrack.current.play(localVideoRef.current);
+      }
+
+      // Publish tracks to the channel
+      await agoraEngine.current.publish([
+        localAudioTrack.current,
+        localVideoTrack.current,
+      ]);
+
+      console.log("Local tracks published successfully");
+    } catch (error) {
+      console.error("Error creating/publishing tracks:", error);
+      setStatus("Failed to start camera/microphone");
+    }
+  };
+
+  // Leave Agora channel
+  const leaveChannel = async () => {
+    try {
+      if (agoraEngine.current) {
+        // Unpublish local tracks
+        if (localAudioTrack.current) {
+          localAudioTrack.current.close();
+          localAudioTrack.current = null;
+        }
+        if (localVideoTrack.current) {
+          localVideoTrack.current.close();
+          localVideoTrack.current = null;
+        }
+
+        // Leave the channel
+        await agoraEngine.current.leave();
+        console.log("Left Agora channel");
+      }
+
+      setInCall(false);
+      setStatus("Left video call");
+
+      // Clear video elements
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = null;
+      }
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = null;
+      }
+    } catch (error) {
+      console.error("Error leaving Agora channel:", error);
+    }
+  };
 
   // WebSocket connect and matchmaking
   const startMatchmaking = async () => {
@@ -58,6 +213,9 @@ export default function Dashboard({ onLogout }) {
     setSubtitle("");
     setInCall(false);
 
+    // Initialize Agora client
+    await initializeAgora();
+
     // Small delay to ensure cleanup is complete
     await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -75,7 +233,7 @@ export default function Dashboard({ onLogout }) {
     socket.onclose = (event) => {
       console.log("WebSocket closed:", event.code, event.reason);
       setStatus("WebSocket connection closed");
-      setWs(null); // Clear the WebSocket reference when closed
+      setWs(null);
     };
     socket.onmessage = (event) => {
       console.log("WebSocket message received:", event.data);
@@ -107,23 +265,17 @@ export default function Dashboard({ onLogout }) {
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({ type: "username", username: username }));
       }
-      startVideoCall(socket);
+      // Join Agora channel with the provided channel name
+      if (data.channelName) {
+        joinChannel(
+          data.channelName,
+          data.uid || Math.floor(Math.random() * 100000)
+        );
+      }
     }
     if (data.type === "username") {
       console.log("Received peer username:", data.username);
       setPeerUsername(data.username);
-    }
-    if (data.type === "offer") {
-      console.log("Received offer from peer");
-      handleReceiveOffer(data.offer, socket);
-    }
-    if (data.type === "answer") {
-      console.log("Received answer from peer");
-      handleReceiveAnswer(data.answer);
-    }
-    if (data.type === "candidate") {
-      console.log("Received ICE candidate from peer");
-      handleReceiveCandidate(data.candidate);
     }
     if (data.type === "chat") {
       setChat((prev) => [...prev, { from: "peer", text: data.text }]);
@@ -146,290 +298,14 @@ export default function Dashboard({ onLogout }) {
     }
   }
 
-  // WebRTC setup and signaling
-  const startVideoCall = async (socket) => {
-    console.log("Starting video call...");
-    setStatus("Starting video...");
-    setInCall(false);
-
-    // Reset video elements
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = null;
-    }
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = null;
-    }
-
-    try {
-      console.log("Getting user media...");
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      console.log("Local stream obtained:", localStream);
-      localStreamRef.current = localStream;
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream;
-        console.log("Local video srcObject set");
-      }
-      // Setup peer connection
-      console.log("Creating RTCPeerConnection...");
-      const pc = new window.RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-      });
-      pcRef.current = pc;
-      console.log("RTCPeerConnection created");
-
-      // Add local tracks
-      console.log("Adding local tracks to peer connection...");
-      localStream.getTracks().forEach((track) => {
-        console.log("Adding track:", track.kind);
-        pc.addTrack(track, localStream);
-      });
-
-      // ICE candidate handling
-      pc.onicecandidate = (event) => {
-        if (event.candidate && socket) {
-          console.log("Sending ICE candidate");
-          socket.send(
-            JSON.stringify({ type: "candidate", candidate: event.candidate })
-          );
-        }
-      };
-
-      // Remote stream handling
-      pc.ontrack = (event) => {
-        console.log("Remote track received:", event.streams[0]);
-        console.log("Remote track kind:", event.track.kind);
-        if (remoteVideoRef.current) {
-          console.log("Remote video element found, setting srcObject");
-          remoteVideoRef.current.srcObject = event.streams[0];
-          console.log("Remote video srcObject set");
-          // Force video to play
-          remoteVideoRef.current
-            .play()
-            .catch((e) => console.log("Video play error:", e));
-        } else {
-          console.log("Remote video element not found!");
-        }
-        setInCall(true);
-        setStatus("In call");
-      };
-
-      // Add connection state change handler
-      pc.onconnectionstatechange = () => {
-        console.log("Connection state changed:", pc.connectionState);
-        if (pc.connectionState === "connected") {
-          console.log("WebRTC connection established!");
-        }
-      };
-
-      // Create and send offer
-      console.log("Creating offer...");
-      const offer = await pc.createOffer();
-      console.log("Offer created:", offer);
-      await pc.setLocalDescription(offer);
-      console.log("Local description set");
-
-      // Check WebSocket state and send offer
-      const currentSocket = socket;
-      if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
-        console.log("Sending offer via WebSocket");
-        currentSocket.send(JSON.stringify({ type: "offer", offer }));
-        console.log("Offer sent");
-      } else {
-        console.error(
-          "WebSocket not available or not open. ReadyState:",
-          currentSocket ? currentSocket.readyState : "null"
-        );
-        setStatus("WebSocket connection lost. Please try again.");
-        return;
-      }
-    } catch (err) {
-      console.error("Error in startVideoCall:", err);
-      setStatus("Could not start video: " + err.message);
-    }
-  };
-
-  const handleReceiveOffer = async (offer, socket) => {
-    console.log("Received offer, creating answer...");
-    setStatus("Received offer, creating answer...");
-
-    // Clean up any existing peer connection
-    if (pcRef.current) {
-      console.log("Cleaning up existing peer connection");
-      pcRef.current.close();
-      pcRef.current = null;
-    }
-
-    const pc = new window.RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    });
-    pcRef.current = pc;
-    console.log("New peer connection created for offer");
-
-    // Add local stream
-    if (!localStreamRef.current) {
-      console.log("Getting local stream for offer handling...");
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      localStreamRef.current = localStream;
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream;
-        console.log("Local video srcObject set in offer handling");
-      }
-    }
-
-    console.log("Adding local tracks to peer connection...");
-    localStreamRef.current.getTracks().forEach((track) => {
-      console.log("Adding track:", track.kind);
-      pc.addTrack(track, localStreamRef.current);
-    });
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate && socket) {
-        console.log("Sending ICE candidate from offer handler");
-        socket.send(
-          JSON.stringify({ type: "candidate", candidate: event.candidate })
-        );
-      }
-    };
-
-    pc.ontrack = (event) => {
-      console.log(
-        "Remote track received in handleReceiveOffer:",
-        event.streams[0]
-      );
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
-        console.log("Remote video srcObject set in handleReceiveOffer");
-        // Force video to play
-        remoteVideoRef.current
-          .play()
-          .catch((e) => console.log("Video play error:", e));
-      }
-      setInCall(true);
-      setStatus("In call");
-    };
-
-    // Add connection state change handler
-    pc.onconnectionstatechange = () => {
-      console.log(
-        "Connection state changed in offer handler:",
-        pc.connectionState
-      );
-      if (pc.connectionState === "connected") {
-        console.log("WebRTC connection established in offer handler!");
-      }
-    };
-
-    try {
-      console.log("Setting remote description...");
-      await pc.setRemoteDescription(new RTCSessionDescription(offer));
-      console.log("Remote description set successfully");
-
-      console.log("Creating answer...");
-      const answer = await pc.createAnswer();
-      console.log("Answer created:", answer);
-
-      console.log("Setting local description...");
-      await pc.setLocalDescription(answer);
-      console.log("Local description set successfully");
-
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Sending answer via WebSocket");
-        socket.send(JSON.stringify({ type: "answer", answer }));
-        console.log("Answer sent");
-      } else {
-        console.error("WebSocket not available to send answer");
-      }
-    } catch (err) {
-      console.error("Error in handleReceiveOffer:", err);
-      setStatus("Error handling offer: " + err.message);
-    }
-  };
-
-  const handleReceiveAnswer = async (answer) => {
-    console.log("Received answer, connecting...");
-    if (pcRef.current) {
-      try {
-        console.log("Current connection state:", pcRef.current.connectionState);
-        console.log("Current signaling state:", pcRef.current.signalingState);
-
-        // Only set remote description if we're in the right state
-        if (pcRef.current.signalingState === "have-local-offer") {
-          await pcRef.current.setRemoteDescription(
-            new RTCSessionDescription(answer)
-          );
-          console.log("Remote description set successfully");
-          setInCall(true);
-          setStatus("In call");
-        } else {
-          console.log(
-            "Ignoring answer - wrong signaling state:",
-            pcRef.current.signalingState
-          );
-        }
-      } catch (err) {
-        console.error("Error setting remote description:", err);
-        setStatus("Connection error: " + err.message);
-      }
-    } else {
-      console.log("No peer connection available for answer");
-    }
-  };
-
-  const handleReceiveCandidate = async (candidate) => {
-    try {
-      if (pcRef.current && pcRef.current.remoteDescription) {
-        console.log("Adding ICE candidate...");
-        await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-        console.log("ICE candidate added successfully");
-      } else {
-        console.log(
-          "Ignoring ICE candidate - no peer connection or remote description"
-        );
-      }
-    } catch (err) {
-      console.error("Error adding ICE candidate:", err);
-      // Don't show error to user for ICE candidate issues
-    }
-  };
-
   // Cleanup on disconnect or logout
-  const cleanupCall = () => {
+  const cleanupCall = async () => {
     console.log("Cleaning up call resources...");
     setInCall(false);
     setPeerUsername("");
 
-    // Clean up peer connection
-    if (pcRef.current) {
-      console.log("Closing peer connection...");
-      pcRef.current.close();
-      pcRef.current = null;
-    }
-
-    // Stop all local media tracks
-    if (localStreamRef.current) {
-      console.log("Stopping local media tracks...");
-      localStreamRef.current.getTracks().forEach((track) => {
-        console.log("Stopping track:", track.kind);
-        track.stop();
-      });
-      localStreamRef.current = null;
-    }
-
-    // Clear video elements
-    if (localVideoRef.current) {
-      console.log("Clearing local video srcObject");
-      localVideoRef.current.srcObject = null;
-    }
-    if (remoteVideoRef.current) {
-      console.log("Clearing remote video srcObject");
-      remoteVideoRef.current.srcObject = null;
-    }
+    // Leave Agora channel
+    await leaveChannel();
 
     console.log("Call cleanup completed");
   };
