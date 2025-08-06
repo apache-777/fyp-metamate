@@ -261,7 +261,7 @@ export default function Dashboard({ onLogout }) {
               .then(() => {
                 console.log("✅ Remote video started playing successfully");
                 setInCall(true);
-                setStatus("In call - Video active");
+                setStatus("In call - Press Button to get video");
               })
               .catch((e) => {
                 console.error("Failed to play remote video:", e);
@@ -302,7 +302,7 @@ export default function Dashboard({ onLogout }) {
           remoteVideoRef.current.onplay = () => {
             console.log("✅ Remote video started playing");
             setInCall(true);
-            setStatus("In call - Video active");
+            setStatus("In call - Press Button to get video");
           };
 
           remoteVideoRef.current.onerror = (e) => {
@@ -804,7 +804,6 @@ export default function Dashboard({ onLogout }) {
 
   // Force ICE restart function
   const startVideo = () => {
-    console.log("Forcing ICE restart...");
     setShowStartVideoButton(false); // Hide the button when clicked
     if (pcRef.current) {
       try {
@@ -812,13 +811,11 @@ export default function Dashboard({ onLogout }) {
         pcRef.current
           .createOffer({ iceRestart: true })
           .then(async (offer) => {
-            console.log("New offer with ICE restart created");
             await pcRef.current.setLocalDescription(offer);
 
             // Send the new offer
             if (ws && ws.readyState === WebSocket.OPEN) {
               ws.send(JSON.stringify({ type: "offer", offer }));
-              console.log("ICE restart offer sent");
             }
           })
           .catch((err) => {
@@ -954,7 +951,7 @@ export default function Dashboard({ onLogout }) {
           }}
         >
           {!connected && (
-            <button onClick={startMatchmaking}>Initialize and Match</button>
+            <button onClick={startMatchmaking}>Start Matching</button>
           )}
           {connected && (
             <button
