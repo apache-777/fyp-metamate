@@ -29,6 +29,8 @@ export default function Dashboard({ onLogout }) {
   const [connectionState, setConnectionState] = useState("new");
   const [iceConnectionState, setIceConnectionState] = useState("new");
   const connectionTimeoutRef = useRef(null);
+  const [iceCandidatesSent, setIceCandidatesSent] = useState(0);
+  const [iceCandidatesReceived, setIceCandidatesReceived] = useState(0);
 
   const navigate = useNavigate();
 
@@ -84,6 +86,22 @@ export default function Dashboard({ onLogout }) {
       { urls: "stun:stun2.l.google.com:19302" },
       { urls: "stun:stun3.l.google.com:19302" },
       { urls: "stun:stun4.l.google.com:19302" },
+      // Add TURN servers for better connectivity
+      {
+        urls: "turn:openrelay.metered.ca:80",
+        username: "openrelayproject",
+        credential: "openrelayproject",
+      },
+      {
+        urls: "turn:openrelay.metered.ca:443",
+        username: "openrelayproject",
+        credential: "openrelayproject",
+      },
+      {
+        urls: "turn:openrelay.metered.ca:443?transport=tcp",
+        username: "openrelayproject",
+        credential: "openrelayproject",
+      },
     ],
     iceCandidatePoolSize: 10,
     iceTransportPolicy: "all",
@@ -290,13 +308,20 @@ export default function Dashboard({ onLogout }) {
     // ICE candidate handling
     pc.onicecandidate = (event) => {
       if (event.candidate && socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Sending ICE candidate");
+        console.log(
+          "Sending ICE candidate:",
+          event.candidate.type,
+          event.candidate.protocol
+        );
+        setIceCandidatesSent((prev) => prev + 1);
         socket.send(
           JSON.stringify({
             type: "candidate",
             candidate: event.candidate,
           })
         );
+      } else if (!event.candidate) {
+        console.log("✅ ICE gathering completed - no more candidates");
       }
     };
 
@@ -668,6 +693,7 @@ export default function Dashboard({ onLogout }) {
     try {
       if (pcRef.current && pcRef.current.remoteDescription) {
         console.log("Adding ICE candidate...");
+        setIceCandidatesReceived((prev) => prev + 1);
         await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
         console.log("✅ ICE candidate added successfully");
       } else {
@@ -688,6 +714,8 @@ export default function Dashboard({ onLogout }) {
     setPeerUsername("");
     setConnectionState("new");
     setIceConnectionState("new");
+    setIceCandidatesSent(0);
+    setIceCandidatesReceived(0);
 
     // Clear connection timeout
     if (connectionTimeoutRef.current) {
@@ -763,6 +791,13 @@ export default function Dashboard({ onLogout }) {
           pcRef.current.restartIce();
         }
 
+        // Force connection state check
+        console.log(
+          "Current ICE connection state:",
+          pcRef.current.iceConnectionState
+        );
+        console.log("Current connection state:", pcRef.current.connectionState);
+
         // If still stuck, recreate the connection
         setTimeout(() => {
           if (pcRef.current && pcRef.current.connectionState === "connecting") {
@@ -776,6 +811,57 @@ export default function Dashboard({ onLogout }) {
       } catch (err) {
         console.error("Error restarting connection:", err);
       }
+    }
+  };
+
+  // Force ICE restart function
+  const forceIceRestart = () => {
+    console.log("Forcing ICE restart...");
+    if (pcRef.current) {
+      try {
+        // Create a new offer with ICE restart
+        pcRef.current
+          .createOffer({ iceRestart: true })
+          .then(async (offer) => {
+            console.log("New offer with ICE restart created");
+            await pcRef.current.setLocalDescription(offer);
+
+            // Send the new offer
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: "offer", offer }));
+              console.log("ICE restart offer sent");
+            }
+          })
+          .catch((err) => {
+            console.error("Error creating ICE restart offer:", err);
+          });
+      } catch (err) {
+        console.error("Error in forceIceRestart:", err);
+      }
+    }
+  };
+
+  // Test connection function
+  const testConnection = () => {
+    console.log("Testing connection...");
+    if (pcRef.current) {
+      console.log("Connection state:", pcRef.current.connectionState);
+      console.log("ICE connection state:", pcRef.current.iceConnectionState);
+      console.log("Signaling state:", pcRef.current.signalingState);
+      console.log("ICE gathering state:", pcRef.current.iceGatheringState);
+
+      // Check if we have any remote candidates
+      const stats = pcRef.current.getStats();
+      stats.then((results) => {
+        results.forEach((report) => {
+          if (
+            report.type === "candidate-pair" &&
+            report.state === "succeeded"
+          ) {
+            console.log("✅ Found successful candidate pair:", report);
+          }
+        });
+      });
     }
   };
 
@@ -1003,7 +1089,16 @@ export default function Dashboard({ onLogout }) {
               ICE Gathering:{" "}
               {pcRef.current ? pcRef.current.iceGatheringState : "N/A"}
             </div>
-            <div style={{ marginTop: "10px", display: "flex", gap: "5px" }}>
+            <div>ICE Candidates Sent: {iceCandidatesSent}</div>
+            <div>ICE Candidates Received: {iceCandidatesReceived}</div>
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                gap: "5px",
+                flexWrap: "wrap",
+              }}
+            >
               <button
                 onClick={forcePlayVideo}
                 style={{
@@ -1031,6 +1126,34 @@ export default function Dashboard({ onLogout }) {
                 }}
               >
                 Restart Connection
+              </button>
+              <button
+                onClick={forceIceRestart}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: "11px",
+                  backgroundColor: "#f44336",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Force ICE Restart
+              </button>
+              <button
+                onClick={testConnection}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: "11px",
+                  backgroundColor: "#4caf50",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Test Connection
               </button>
             </div>
           </div>
