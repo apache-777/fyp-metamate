@@ -261,7 +261,7 @@ export default function Dashboard({ onLogout }) {
               .then(() => {
                 console.log("✅ Remote video started playing successfully");
                 setInCall(true);
-                setStatus("In call - Press Button to get video");
+                setStatus(`In call with ${peerUsername}`);
               })
               .catch((e) => {
                 console.error("Failed to play remote video:", e);
@@ -302,7 +302,7 @@ export default function Dashboard({ onLogout }) {
           remoteVideoRef.current.onplay = () => {
             console.log("✅ Remote video started playing");
             setInCall(true);
-            setStatus("In call - Press Button to get video");
+            setStatus(`In call with ${peerUsername}`);
           };
 
           remoteVideoRef.current.onerror = (e) => {
