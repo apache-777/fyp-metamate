@@ -354,35 +354,35 @@ export default function Dashboard({ onLogout }) {
   //   }
   // };
 
-  // const handleReceiveAnswer = async (answer) => {
-  //   console.log("Received answer, connecting...");
-  //   if (pcRef.current) {
-  //     try {
-  //       console.log("Current connection state:", pcRef.current.connectionState);
-  //       console.log("Current signaling state:", pcRef.current.signalingState);
+  const handleReceiveAnswer = async (answer) => {
+    console.log("Received answer, connecting...");
+    if (pcRef.current) {
+      try {
+        console.log("Current connection state:", pcRef.current.connectionState);
+        console.log("Current signaling state:", pcRef.current.signalingState);
 
-  //       // Only set remote description if we're in the right state
-  //       if (pcRef.current.signalingState === "have-local-offer") {
-  //         await pcRef.current.setRemoteDescription(
-  //           new RTCSessionDescription(answer)
-  //         );
-  //         console.log("Remote description set successfully");
-  //         setInCall(true);
-  //         setStatus("In call");
-  //       } else {
-  //         console.log(
-  //           "Ignoring answer - wrong signaling state:",
-  //           pcRef.current.signalingState
-  //         );
-  //       }
-  //     } catch (err) {
-  //       console.error("Error setting remote description:", err);
-  //       setStatus("Connection error: " + err.message);
-  //     }
-  //   } else {
-  //     console.log("No peer connection available for answer");
-  //   }
-  // };
+        // Only set remote description if we're in the right state
+        if (pcRef.current.signalingState === "have-local-offer") {
+          await pcRef.current.setRemoteDescription(
+            new RTCSessionDescription(answer)
+          );
+          console.log("Remote description set successfully");
+          setInCall(true);
+          setStatus("In call");
+        } else {
+          console.log(
+            "Ignoring answer - wrong signaling state:",
+            pcRef.current.signalingState
+          );
+        }
+      } catch (err) {
+        console.error("Error setting remote description:", err);
+        setStatus("Connection error: " + err.message);
+      }
+    } else {
+      console.log("No peer connection available for answer");
+    }
+  };
 
   // const handleReceiveCandidate = async (candidate) => {
   //   try {
