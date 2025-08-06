@@ -172,7 +172,7 @@ export default function Dashboard({ onLogout }) {
         setInCall(false);
       } else if (pc.connectionState === "connecting") {
         console.log("🔄 WebRTC connecting...");
-        setStatus("Connecting to peer...");
+        setStatus("Connecting...");
 
         // Set a timeout for connection
         connectionTimeoutRef.current = setTimeout(() => {
@@ -611,7 +611,7 @@ export default function Dashboard({ onLogout }) {
 
   const handleReceiveOffer = async (offer, socket) => {
     console.log("📥 Received offer, creating answer...");
-    setStatus("Received offer, creating answer...");
+    setStatus("Connecting...");
     isCallerRef.current = false;
 
     try {
@@ -714,7 +714,7 @@ export default function Dashboard({ onLogout }) {
         );
         console.log("✅ Remote description set successfully");
         setInCall(true);
-        setStatus("In call - Connecting...");
+        setStatus("Connecting...");
       } else {
         console.log(
           "⚠️ Ignoring answer - wrong signaling state:",
