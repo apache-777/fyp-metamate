@@ -1211,3 +1211,39 @@ body {
     min-height: 180px;
   }
 }
+
+@media (max-width: 500px) {
+  .local-video-container {
+    height: 20vh;
+    min-height: 150px;
+    max-height: 220px;
+  }
+
+  .local-video-pip {
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 400px) {
+  .local-video-container {
+    height: 18vh;
+    min-height: 120px;
+    max-height: 180px;
+  }
+
+  .local-video-pip {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 320px) {
+  .local-video-container {
+    height: 15vh;
+    min-height: 100px;
+    max-height: 150px;
+  }
+
+  .local-video-pip {
+    min-height: 100px;
+  }
+}
