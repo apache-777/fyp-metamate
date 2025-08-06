@@ -172,7 +172,7 @@ export default function Dashboard({ onLogout }) {
         setInCall(false);
       } else if (pc.connectionState === "connecting") {
         console.log("🔄 WebRTC connecting...");
-        setStatus("Connecting...");
+        setStatus("Connecting to peer...");
 
         // Set a timeout for connection
         connectionTimeoutRef.current = setTimeout(() => {
@@ -261,7 +261,7 @@ export default function Dashboard({ onLogout }) {
               .then(() => {
                 console.log("✅ Remote video started playing successfully");
                 setInCall(true);
-                setStatus(`In call with ${peerUsername}`);
+                setStatus("In call - Video active");
               })
               .catch((e) => {
                 console.error("Failed to play remote video:", e);
@@ -302,7 +302,7 @@ export default function Dashboard({ onLogout }) {
           remoteVideoRef.current.onplay = () => {
             console.log("✅ Remote video started playing");
             setInCall(true);
-            setStatus(`In call with ${peerUsername}`);
+            setStatus("In call - Video active");
           };
 
           remoteVideoRef.current.onerror = (e) => {
@@ -611,7 +611,7 @@ export default function Dashboard({ onLogout }) {
 
   const handleReceiveOffer = async (offer, socket) => {
     console.log("📥 Received offer, creating answer...");
-    setStatus("Connecting...");
+    setStatus("Received offer, creating answer...");
     isCallerRef.current = false;
 
     try {
@@ -714,7 +714,7 @@ export default function Dashboard({ onLogout }) {
         );
         console.log("✅ Remote description set successfully");
         setInCall(true);
-        setStatus("Connecting...");
+        setStatus("In call - Connecting...");
       } else {
         console.log(
           "⚠️ Ignoring answer - wrong signaling state:",
@@ -804,6 +804,7 @@ export default function Dashboard({ onLogout }) {
 
   // Force ICE restart function
   const startVideo = () => {
+    console.log("Forcing ICE restart...");
     setShowStartVideoButton(false); // Hide the button when clicked
     if (pcRef.current) {
       try {
@@ -811,11 +812,13 @@ export default function Dashboard({ onLogout }) {
         pcRef.current
           .createOffer({ iceRestart: true })
           .then(async (offer) => {
+            console.log("New offer with ICE restart created");
             await pcRef.current.setLocalDescription(offer);
 
             // Send the new offer
             if (ws && ws.readyState === WebSocket.OPEN) {
               ws.send(JSON.stringify({ type: "offer", offer }));
+              console.log("ICE restart offer sent");
             }
           })
           .catch((err) => {
@@ -951,7 +954,7 @@ export default function Dashboard({ onLogout }) {
           }}
         >
           {!connected && (
-            <button onClick={startMatchmaking}>Start Matching</button>
+            <button onClick={startMatchmaking}>Initialize and Match</button>
           )}
           {connected && (
             <button
