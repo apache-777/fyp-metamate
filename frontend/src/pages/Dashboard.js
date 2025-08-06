@@ -19,15 +19,12 @@ export default function Dashboard({ onLogout }) {
   const localStreamRef = useRef();
   const isCallerRef = useRef(false);
   const [showSubtitle, setShowSubtitle] = useState(false);
-  const [isListening, setIsListening] = useState(false);
   const [username, setUsername] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [avatar, setAvatar] = useState(
     "https://i.ibb.co/2kR8bQn/avatar-placeholder.png"
   );
   const [peerUsername, setPeerUsername] = useState("");
-  const [recognition, setRecognition] = useState(null);
-  const [remoteStream, setRemoteStream] = useState(null);
 
   const navigate = useNavigate();
 
@@ -149,210 +146,210 @@ export default function Dashboard({ onLogout }) {
     }
   }
 
-  // // WebRTC setup and signaling
-  // const startVideoCall = async (socket) => {
-  //   console.log("Starting video call...");
-  //   setStatus("Starting video...");
-  //   setInCall(false);
+  // WebRTC setup and signaling
+  const startVideoCall = async (socket) => {
+    console.log("Starting video call...");
+    setStatus("Starting video...");
+    setInCall(false);
 
-  //   // Reset video elements
-  //   if (localVideoRef.current) {
-  //     localVideoRef.current.srcObject = null;
-  //   }
-  //   if (remoteVideoRef.current) {
-  //     remoteVideoRef.current.srcObject = null;
-  //   }
+    // Reset video elements
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
 
-  //   try {
-  //     console.log("Getting user media...");
-  //     const localStream = await navigator.mediaDevices.getUserMedia({
-  //       video: true,
-  //       audio: true,
-  //     });
-  //     console.log("Local stream obtained:", localStream);
-  //     localStreamRef.current = localStream;
-  //     if (localVideoRef.current) {
-  //       localVideoRef.current.srcObject = localStream;
-  //       console.log("Local video srcObject set");
-  //     }
-  //     // Setup peer connection
-  //     console.log("Creating RTCPeerConnection...");
-  //     const pc = new window.RTCPeerConnection({
-  //       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-  //     });
-  //     pcRef.current = pc;
-  //     console.log("RTCPeerConnection created");
+    try {
+      console.log("Getting user media...");
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      console.log("Local stream obtained:", localStream);
+      localStreamRef.current = localStream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = localStream;
+        console.log("Local video srcObject set");
+      }
+      // Setup peer connection
+      console.log("Creating RTCPeerConnection...");
+      const pc = new window.RTCPeerConnection({
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      });
+      pcRef.current = pc;
+      console.log("RTCPeerConnection created");
 
-  //     // Add local tracks
-  //     console.log("Adding local tracks to peer connection...");
-  //     localStream.getTracks().forEach((track) => {
-  //       console.log("Adding track:", track.kind);
-  //       pc.addTrack(track, localStream);
-  //     });
+      // Add local tracks
+      console.log("Adding local tracks to peer connection...");
+      localStream.getTracks().forEach((track) => {
+        console.log("Adding track:", track.kind);
+        pc.addTrack(track, localStream);
+      });
 
-  //     // ICE candidate handling
-  //     pc.onicecandidate = (event) => {
-  //       if (event.candidate && socket) {
-  //         console.log("Sending ICE candidate");
-  //         socket.send(
-  //           JSON.stringify({ type: "candidate", candidate: event.candidate })
-  //         );
-  //       }
-  //     };
+      // ICE candidate handling
+      pc.onicecandidate = (event) => {
+        if (event.candidate && socket) {
+          console.log("Sending ICE candidate");
+          socket.send(
+            JSON.stringify({ type: "candidate", candidate: event.candidate })
+          );
+        }
+      };
 
-  //     // Remote stream handling
-  //     pc.ontrack = (event) => {
-  //       console.log("Remote track received:", event.streams[0]);
-  //       console.log("Remote track kind:", event.track.kind);
-  //       if (remoteVideoRef.current) {
-  //         console.log("Remote video element found, setting srcObject");
-  //         remoteVideoRef.current.srcObject = event.streams[0];
-  //         console.log("Remote video srcObject set");
-  //         // Force video to play
-  //         remoteVideoRef.current
-  //           .play()
-  //           .catch((e) => console.log("Video play error:", e));
-  //       } else {
-  //         console.log("Remote video element not found!");
-  //       }
-  //       setInCall(true);
-  //       setStatus("In call");
-  //     };
+      // Remote stream handling
+      pc.ontrack = (event) => {
+        console.log("Remote track received:", event.streams[0]);
+        console.log("Remote track kind:", event.track.kind);
+        if (remoteVideoRef.current) {
+          console.log("Remote video element found, setting srcObject");
+          remoteVideoRef.current.srcObject = event.streams[0];
+          console.log("Remote video srcObject set");
+          // Force video to play
+          remoteVideoRef.current
+            .play()
+            .catch((e) => console.log("Video play error:", e));
+        } else {
+          console.log("Remote video element not found!");
+        }
+        setInCall(true);
+        setStatus("In call");
+      };
 
-  //     // Add connection state change handler
-  //     pc.onconnectionstatechange = () => {
-  //       console.log("Connection state changed:", pc.connectionState);
-  //       if (pc.connectionState === "connected") {
-  //         console.log("WebRTC connection established!");
-  //       }
-  //     };
+      // Add connection state change handler
+      pc.onconnectionstatechange = () => {
+        console.log("Connection state changed:", pc.connectionState);
+        if (pc.connectionState === "connected") {
+          console.log("WebRTC connection established!");
+        }
+      };
 
-  //     // Create and send offer
-  //     console.log("Creating offer...");
-  //     const offer = await pc.createOffer();
-  //     console.log("Offer created:", offer);
-  //     await pc.setLocalDescription(offer);
-  //     console.log("Local description set");
+      // Create and send offer
+      console.log("Creating offer...");
+      const offer = await pc.createOffer();
+      console.log("Offer created:", offer);
+      await pc.setLocalDescription(offer);
+      console.log("Local description set");
 
-  //     // Check WebSocket state and send offer
-  //     const currentSocket = socket;
-  //     if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
-  //       console.log("Sending offer via WebSocket");
-  //       currentSocket.send(JSON.stringify({ type: "offer", offer }));
-  //       console.log("Offer sent");
-  //     } else {
-  //       console.error(
-  //         "WebSocket not available or not open. ReadyState:",
-  //         currentSocket ? currentSocket.readyState : "null"
-  //       );
-  //       setStatus("WebSocket connection lost. Please try again.");
-  //       return;
-  //     }
-  //   } catch (err) {
-  //     console.error("Error in startVideoCall:", err);
-  //     setStatus("Could not start video: " + err.message);
-  //   }
-  // };
+      // Check WebSocket state and send offer
+      const currentSocket = socket;
+      if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
+        console.log("Sending offer via WebSocket");
+        currentSocket.send(JSON.stringify({ type: "offer", offer }));
+        console.log("Offer sent");
+      } else {
+        console.error(
+          "WebSocket not available or not open. ReadyState:",
+          currentSocket ? currentSocket.readyState : "null"
+        );
+        setStatus("WebSocket connection lost. Please try again.");
+        return;
+      }
+    } catch (err) {
+      console.error("Error in startVideoCall:", err);
+      setStatus("Could not start video: " + err.message);
+    }
+  };
 
-  // const handleReceiveOffer = async (offer, socket) => {
-  //   console.log("Received offer, creating answer...");
-  //   setStatus("Received offer, creating answer...");
+  const handleReceiveOffer = async (offer, socket) => {
+    console.log("Received offer, creating answer...");
+    setStatus("Received offer, creating answer...");
 
-  //   // Clean up any existing peer connection
-  //   if (pcRef.current) {
-  //     console.log("Cleaning up existing peer connection");
-  //     pcRef.current.close();
-  //     pcRef.current = null;
-  //   }
+    // Clean up any existing peer connection
+    if (pcRef.current) {
+      console.log("Cleaning up existing peer connection");
+      pcRef.current.close();
+      pcRef.current = null;
+    }
 
-  //   const pc = new window.RTCPeerConnection({
-  //     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-  //   });
-  //   pcRef.current = pc;
-  //   console.log("New peer connection created for offer");
+    const pc = new window.RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+    pcRef.current = pc;
+    console.log("New peer connection created for offer");
 
-  //   // Add local stream
-  //   if (!localStreamRef.current) {
-  //     console.log("Getting local stream for offer handling...");
-  //     const localStream = await navigator.mediaDevices.getUserMedia({
-  //       video: true,
-  //       audio: true,
-  //     });
-  //     localStreamRef.current = localStream;
-  //     if (localVideoRef.current) {
-  //       localVideoRef.current.srcObject = localStream;
-  //       console.log("Local video srcObject set in offer handling");
-  //     }
-  //   }
+    // Add local stream
+    if (!localStreamRef.current) {
+      console.log("Getting local stream for offer handling...");
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      localStreamRef.current = localStream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = localStream;
+        console.log("Local video srcObject set in offer handling");
+      }
+    }
 
-  //   console.log("Adding local tracks to peer connection...");
-  //   localStreamRef.current.getTracks().forEach((track) => {
-  //     console.log("Adding track:", track.kind);
-  //     pc.addTrack(track, localStreamRef.current);
-  //   });
+    console.log("Adding local tracks to peer connection...");
+    localStreamRef.current.getTracks().forEach((track) => {
+      console.log("Adding track:", track.kind);
+      pc.addTrack(track, localStreamRef.current);
+    });
 
-  //   pc.onicecandidate = (event) => {
-  //     if (event.candidate && socket) {
-  //       console.log("Sending ICE candidate from offer handler");
-  //       socket.send(
-  //         JSON.stringify({ type: "candidate", candidate: event.candidate })
-  //       );
-  //     }
-  //   };
+    pc.onicecandidate = (event) => {
+      if (event.candidate && socket) {
+        console.log("Sending ICE candidate from offer handler");
+        socket.send(
+          JSON.stringify({ type: "candidate", candidate: event.candidate })
+        );
+      }
+    };
 
-  //   pc.ontrack = (event) => {
-  //     console.log(
-  //       "Remote track received in handleReceiveOffer:",
-  //       event.streams[0]
-  //     );
-  //     if (remoteVideoRef.current) {
-  //       remoteVideoRef.current.srcObject = event.streams[0];
-  //       console.log("Remote video srcObject set in handleReceiveOffer");
-  //       // Force video to play
-  //       remoteVideoRef.current
-  //         .play()
-  //         .catch((e) => console.log("Video play error:", e));
-  //     }
-  //     setInCall(true);
-  //     setStatus("In call");
-  //   };
+    pc.ontrack = (event) => {
+      console.log(
+        "Remote track received in handleReceiveOffer:",
+        event.streams[0]
+      );
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+        console.log("Remote video srcObject set in handleReceiveOffer");
+        // Force video to play
+        remoteVideoRef.current
+          .play()
+          .catch((e) => console.log("Video play error:", e));
+      }
+      setInCall(true);
+      setStatus("In call");
+    };
 
-  //   // Add connection state change handler
-  //   pc.onconnectionstatechange = () => {
-  //     console.log(
-  //       "Connection state changed in offer handler:",
-  //       pc.connectionState
-  //     );
-  //     if (pc.connectionState === "connected") {
-  //       console.log("WebRTC connection established in offer handler!");
-  //     }
-  //   };
+    // Add connection state change handler
+    pc.onconnectionstatechange = () => {
+      console.log(
+        "Connection state changed in offer handler:",
+        pc.connectionState
+      );
+      if (pc.connectionState === "connected") {
+        console.log("WebRTC connection established in offer handler!");
+      }
+    };
 
-  //   try {
-  //     console.log("Setting remote description...");
-  //     await pc.setRemoteDescription(new RTCSessionDescription(offer));
-  //     console.log("Remote description set successfully");
+    try {
+      console.log("Setting remote description...");
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      console.log("Remote description set successfully");
 
-  //     console.log("Creating answer...");
-  //     const answer = await pc.createAnswer();
-  //     console.log("Answer created:", answer);
+      console.log("Creating answer...");
+      const answer = await pc.createAnswer();
+      console.log("Answer created:", answer);
 
-  //     console.log("Setting local description...");
-  //     await pc.setLocalDescription(answer);
-  //     console.log("Local description set successfully");
+      console.log("Setting local description...");
+      await pc.setLocalDescription(answer);
+      console.log("Local description set successfully");
 
-  //     if (socket && socket.readyState === WebSocket.OPEN) {
-  //       console.log("Sending answer via WebSocket");
-  //       socket.send(JSON.stringify({ type: "answer", answer }));
-  //       console.log("Answer sent");
-  //     } else {
-  //       console.error("WebSocket not available to send answer");
-  //     }
-  //   } catch (err) {
-  //     console.error("Error in handleReceiveOffer:", err);
-  //     setStatus("Error handling offer: " + err.message);
-  //   }
-  // };
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        console.log("Sending answer via WebSocket");
+        socket.send(JSON.stringify({ type: "answer", answer }));
+        console.log("Answer sent");
+      } else {
+        console.error("WebSocket not available to send answer");
+      }
+    } catch (err) {
+      console.error("Error in handleReceiveOffer:", err);
+      setStatus("Error handling offer: " + err.message);
+    }
+  };
 
   const handleReceiveAnswer = async (answer) => {
     console.log("Received answer, connecting...");
@@ -401,392 +398,11 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
-  // // Cleanup on disconnect or logout
-  // const cleanupCall = () => {
-  //   console.log("Cleaning up call resources...");
-  //   setInCall(false);
-  //   setPeerUsername("");
-
-  //   // Stop speech recognition if active
-  //   if (recognition) {
-  //     recognition.stop();
-  //     setRecognition(null);
-  //   }
-  //   setIsListening(false);
-  //   setShowSubtitle(false);
-
-  //   // Clean up peer connection
-  //   if (pcRef.current) {
-  //     console.log("Closing peer connection...");
-  //     pcRef.current.close();
-  //     pcRef.current = null;
-  //   }
-
-  //   // Stop all local media tracks
-  //   if (localStreamRef.current) {
-  //     console.log("Stopping local media tracks...");
-  //     localStreamRef.current.getTracks().forEach((track) => {
-  //       console.log("Stopping track:", track.kind);
-  //       track.stop();
-  //     });
-  //     localStreamRef.current = null;
-  //   }
-
-  //   // Clear video elements
-  //   if (localVideoRef.current) {
-  //     console.log("Clearing local video srcObject");
-  //     localVideoRef.current.srcObject = null;
-  //   }
-  //   if (remoteVideoRef.current) {
-  //     console.log("Clearing remote video srcObject");
-  //     remoteVideoRef.current.srcObject = null;
-  //   }
-
-  //   console.log("Call cleanup completed");
-  // };
-
-  // // Cleanup on component unmount
-  // useEffect(() => {
-  //   return () => {
-  //     cleanupCall();
-  //     if (ws) ws.close();
-  //   };
-  //   // eslint-disable-next-line
-  // }, []);
-
-  // WebRTC setup and signaling - UPDATED VERSION
-  const startVideoCall = async (socket) => {
-    console.log("Starting video call...");
-    setStatus("Starting video...");
-    setInCall(false);
-
-    // Reset video elements
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = null;
-    }
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = null;
-    }
-
-    try {
-      console.log("Getting user media...");
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: "user",
-        },
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-      console.log("Local stream obtained:", localStream);
-      localStreamRef.current = localStream;
-
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream;
-        // Ensure local video plays
-        await localVideoRef.current.play().catch((e) => {
-          console.log("Local video autoplay prevented:", e);
-          // Add click handler if autoplay fails
-          localVideoRef.current.muted = true;
-          localVideoRef.current.play();
-        });
-        console.log("Local video srcObject set and playing");
-      }
-
-      // Setup peer connection
-      console.log("Creating RTCPeerConnection...");
-      const pc = new window.RTCPeerConnection({
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          { urls: "stun:stun1.l.google.com:19302" },
-        ],
-      });
-      pcRef.current = pc;
-      console.log("RTCPeerConnection created");
-
-      // Add local tracks
-      console.log("Adding local tracks to peer connection...");
-      localStream.getTracks().forEach((track) => {
-        console.log("Adding track:", track.kind, track.enabled);
-        pc.addTrack(track, localStream);
-      });
-
-      // ICE candidate handling
-      pc.onicecandidate = (event) => {
-        if (event.candidate && socket && socket.readyState === WebSocket.OPEN) {
-          console.log("Sending ICE candidate");
-          socket.send(
-            JSON.stringify({ type: "candidate", candidate: event.candidate })
-          );
-        }
-      };
-
-      // Remote stream handling - FIXED VERSION
-      let remoteStreamReceived = null;
-      pc.ontrack = (event) => {
-        console.log(
-          "Remote track received:",
-          event.track.kind,
-          "enabled:",
-          event.track.enabled
-        );
-
-        // Use the first stream from the event
-        if (event.streams && event.streams[0]) {
-          if (!remoteStreamReceived) {
-            remoteStreamReceived = event.streams[0];
-            console.log("Setting remote stream for the first time");
-
-            // Set remote video srcObject only once
-            if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = remoteStreamReceived;
-              setRemoteStream(remoteStreamReceived);
-
-              // Ensure remote video plays with audio
-              remoteVideoRef.current.muted = false; // Important: Don't mute remote video
-              remoteVideoRef.current
-                .play()
-                .then(() => {
-                  console.log("Remote video started playing successfully");
-                  setInCall(true);
-                  setStatus("Connected - Audio and Video active");
-                })
-                .catch((e) => {
-                  console.log("Remote video play failed:", e);
-                  // Try to enable audio manually
-                  remoteVideoRef.current.muted = false;
-                  remoteVideoRef.current.volume = 1.0;
-                  // Try again
-                  setTimeout(() => {
-                    remoteVideoRef.current.play().catch(console.log);
-                  }, 1000);
-                });
-            }
-          } else {
-            console.log("Remote stream already set, ignoring additional track");
-          }
-        }
-      };
-
-      // Connection state monitoring
-      pc.onconnectionstatechange = () => {
-        console.log("Connection state changed:", pc.connectionState);
-        if (pc.connectionState === "connected") {
-          console.log("WebRTC connection fully established!");
-          setStatus("Connected");
-        } else if (
-          pc.connectionState === "disconnected" ||
-          pc.connectionState === "failed"
-        ) {
-          console.log("Connection lost");
-          setStatus("Connection lost");
-        }
-      };
-
-      // ICE connection state monitoring
-      pc.oniceconnectionstatechange = () => {
-        console.log("ICE connection state:", pc.iceConnectionState);
-      };
-
-      // Create and send offer
-      console.log("Creating offer...");
-      const offer = await pc.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true,
-      });
-      console.log("Offer created:", offer);
-      await pc.setLocalDescription(offer);
-      console.log("Local description set");
-
-      // Check WebSocket state and send offer
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Sending offer via WebSocket");
-        socket.send(JSON.stringify({ type: "offer", offer }));
-        console.log("Offer sent");
-      } else {
-        console.error("WebSocket not available or not open");
-        setStatus("WebSocket connection lost. Please try again.");
-        return;
-      }
-    } catch (err) {
-      console.error("Error in startVideoCall:", err);
-      setStatus("Could not start video: " + err.message);
-
-      // Handle permission denied specifically
-      if (err.name === "NotAllowedError") {
-        setStatus(
-          "Camera/Microphone permission denied. Please allow access and refresh."
-        );
-      }
-    }
-  };
-
-  const handleReceiveOffer = async (offer, socket) => {
-    console.log("Received offer, creating answer...");
-    setStatus("Received offer, creating answer...");
-
-    // Clean up any existing peer connection
-    if (pcRef.current) {
-      console.log("Cleaning up existing peer connection");
-      pcRef.current.close();
-      pcRef.current = null;
-    }
-
-    const pc = new window.RTCPeerConnection({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" },
-      ],
-    });
-    pcRef.current = pc;
-    console.log("New peer connection created for offer");
-
-    // Add local stream
-    if (!localStreamRef.current) {
-      console.log("Getting local stream for offer handling...");
-      try {
-        const localStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            facingMode: "user",
-          },
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-          },
-        });
-        localStreamRef.current = localStream;
-
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = localStream;
-          localVideoRef.current.muted = true; // Mute local video to prevent feedback
-          await localVideoRef.current.play().catch(console.log);
-          console.log("Local video srcObject set in offer handling");
-        }
-      } catch (err) {
-        console.error("Error getting local stream:", err);
-        setStatus("Camera/microphone access failed: " + err.message);
-        return;
-      }
-    }
-
-    console.log("Adding local tracks to peer connection...");
-    localStreamRef.current.getTracks().forEach((track) => {
-      console.log("Adding track:", track.kind, track.enabled);
-      pc.addTrack(track, localStreamRef.current);
-    });
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate && socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Sending ICE candidate from offer handler");
-        socket.send(
-          JSON.stringify({ type: "candidate", candidate: event.candidate })
-        );
-      }
-    };
-
-    // Remote stream handling - FIXED VERSION
-    let remoteStreamReceived = null;
-    pc.ontrack = (event) => {
-      console.log(
-        "Remote track received in handleReceiveOffer:",
-        event.track.kind,
-        "enabled:",
-        event.track.enabled
-      );
-
-      if (event.streams && event.streams[0]) {
-        if (!remoteStreamReceived) {
-          remoteStreamReceived = event.streams[0];
-          console.log("Setting remote stream in offer handler");
-
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = remoteStreamReceived;
-            setRemoteStream(remoteStreamReceived);
-
-            // Ensure remote video plays with audio
-            remoteVideoRef.current.muted = false; // Don't mute remote
-            remoteVideoRef.current.volume = 1.0;
-            remoteVideoRef.current
-              .play()
-              .then(() => {
-                console.log("Remote video playing in offer handler");
-                setInCall(true);
-                setStatus("Connected - Audio and Video active");
-              })
-              .catch((e) => {
-                console.log("Remote video play error in offer handler:", e);
-                // Try unmuting and playing again
-                setTimeout(() => {
-                  remoteVideoRef.current.muted = false;
-                  remoteVideoRef.current.play().catch(console.log);
-                }, 1000);
-              });
-          }
-        }
-      }
-    };
-
-    // Connection state monitoring
-    pc.onconnectionstatechange = () => {
-      console.log(
-        "Connection state changed in offer handler:",
-        pc.connectionState
-      );
-      if (pc.connectionState === "connected") {
-        console.log("WebRTC connection established in offer handler!");
-      }
-    };
-
-    try {
-      console.log("Setting remote description...");
-      await pc.setRemoteDescription(new RTCSessionDescription(offer));
-      console.log("Remote description set successfully");
-
-      console.log("Creating answer...");
-      const answer = await pc.createAnswer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true,
-      });
-      console.log("Answer created:", answer);
-
-      console.log("Setting local description...");
-      await pc.setLocalDescription(answer);
-      console.log("Local description set successfully");
-
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Sending answer via WebSocket");
-        socket.send(JSON.stringify({ type: "answer", answer }));
-        console.log("Answer sent");
-      } else {
-        console.error("WebSocket not available to send answer");
-      }
-    } catch (err) {
-      console.error("Error in handleReceiveOffer:", err);
-      setStatus("Error handling offer: " + err.message);
-    }
-  };
-
-  // Updated cleanup function
+  // Cleanup on disconnect or logout
   const cleanupCall = () => {
     console.log("Cleaning up call resources...");
     setInCall(false);
     setPeerUsername("");
-    setRemoteStream(null);
-
-    // Stop speech recognition if active
-    if (recognition) {
-      recognition.stop();
-      setRecognition(null);
-    }
-    setIsListening(false);
-    setShowSubtitle(false);
 
     // Clean up peer connection
     if (pcRef.current) {
@@ -818,22 +434,14 @@ export default function Dashboard({ onLogout }) {
     console.log("Call cleanup completed");
   };
 
-  // Add this function to manually enable audio if needed
-  const enableAudio = () => {
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.muted = false;
-      remoteVideoRef.current.volume = 1.0;
-      remoteVideoRef.current.play().catch(console.log);
-    }
-
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = true;
-        console.log("Local audio enabled");
-      }
-    }
-  };
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      cleanupCall();
+      if (ws) ws.close();
+    };
+    // eslint-disable-next-line
+  }, []);
 
   // Send chat message
   const sendMessage = () => {
@@ -854,415 +462,28 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
-  // // Test speech recognition support
-  // const testSpeechRecognition = () => {
-  //   console.log("Testing speech recognition support...");
-  //   console.log("User Agent:", navigator.userAgent);
-  //   console.log("Protocol:", window.location.protocol);
-  //   console.log("Hostname:", window.location.hostname);
-  //   console.log(
-  //     "webkitSpeechRecognition available:",
-  //     "webkitSpeechRecognition" in window
-  //   );
-  //   console.log("SpeechRecognition available:", "SpeechRecognition" in window);
-
-  //   if (
-  //     navigator.userAgent.match(
-  //       /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-  //     )
-  //   ) {
-  //     console.log("Mobile device detected");
-  //   } else {
-  //     console.log("Desktop device detected");
-  //   }
-  // };
-
-  // // Speech-to-text (STT) using Web Speech API
-  // const startStt = () => {
-  //   if (!connected) {
-  //     setStatus("Cannot start speech-to-text: No user connected.");
-  //     return;
-  //   }
-
-  //   // Check if we're on HTTPS (required for mobile)
-  //   if (
-  //     window.location.protocol !== "https:" &&
-  //     window.location.hostname !== "localhost"
-  //   ) {
-  //     alert(
-  //       "Speech recognition requires HTTPS on mobile devices. Please use HTTPS or localhost."
-  //     );
-  //     return;
-  //   }
-
-  //   // Check for speech recognition support
-  //   if (
-  //     !("webkitSpeechRecognition" in window) &&
-  //     !("SpeechRecognition" in window)
-  //   ) {
-  //     alert(
-  //       "Speech recognition not supported on this device/browser. Please try Chrome, Safari, or Edge."
-  //     );
-  //     return;
-  //   }
-
-  //   // Use the appropriate speech recognition API
-  //   const SpeechRecognition =
-  //     window.SpeechRecognition || window.webkitSpeechRecognition;
-  //   const recognition = new SpeechRecognition();
-
-  //   // Configure for mobile compatibility
-  //   recognition.lang = "en-US";
-  //   recognition.continuous = false; // Stop after one recognition
-  //   recognition.interimResults = false; // Only get final results
-  //   recognition.maxAlternatives = 1;
-
-  //   // Mobile-specific settings
-  //   if (
-  //     navigator.userAgent.match(
-  //       /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-  //     )
-  //   ) {
-  //     // Mobile-specific configuration
-  //     recognition.continuous = false;
-  //     recognition.interimResults = false;
-  //   }
-
-  //   // Handle successful recognition
-  //   recognition.onresult = (event) => {
-  //     const transcript = event.results[0][0].transcript;
-  //     console.log(transcript);
-  //     setSubtitle(transcript);
-  //     const currentWs = ws;
-  //     if (currentWs && currentWs.readyState === WebSocket.OPEN) {
-  //       currentWs.send(JSON.stringify({ type: "stt", text: transcript }));
-  //     }
-  //   };
-
-  //   // Handle errors
-  //   recognition.onerror = (event) => {
-  //     console.error("Speech recognition error:", event.error);
-  //     setIsListening(false);
-  //     setShowSubtitle(false);
-
-  //     // Mobile-specific error handling
-  //     if (event.error === "not-allowed") {
-  //       setStatus(
-  //         "Microphone access denied. Please allow microphone access in your browser settings."
-  //       );
-  //       alert(
-  //         "Please allow microphone access in your browser settings and try again."
-  //       );
-  //     } else if (event.error === "no-speech") {
-  //       setStatus("No speech detected. Please try again.");
-  //     } else if (event.error === "network") {
-  //       setStatus("Network error. Please check your internet connection.");
-  //     } else if (event.error === "service-not-allowed") {
-  //       setStatus(
-  //         "Speech recognition service not available. Please try again later."
-  //       );
-  //     } else {
-  //       setStatus(`Speech recognition error: ${event.error}`);
-  //       console.log("Full error event:", event);
-  //     }
-  //   };
-
-  //   // Handle when recognition ends
-  //   recognition.onend = () => {
-  //     console.log("Speech recognition ended");
-  //     setIsListening(false);
-  //     setShowSubtitle(false);
-  //     setStatus("Speech recognition completed");
-  //   };
-
-  //   // Handle when recognition starts
-  //   recognition.onstart = () => {
-  //     console.log("Speech recognition started");
-  //     setIsListening(true);
-  //     setShowSubtitle(true);
-  //     setStatus("Listening for speech...");
-  //   };
-
-  //   try {
-  //     recognition.start();
-  //     setRecognition(recognition);
-  //   } catch (error) {
-  //     console.error("Error starting speech recognition:", error);
-  //     setStatus("Failed to start speech recognition. Please try again.");
-  //     setIsListening(false);
-  //     setShowSubtitle(false);
-  //   }
-  // };
-
-  // Test speech recognition support
-  const testSpeechRecognition = () => {
-    console.log("Testing speech recognition support...");
-    console.log("User Agent:", navigator.userAgent);
-    console.log("Protocol:", window.location.protocol);
-    console.log("Hostname:", window.location.hostname);
-    console.log(
-      "webkitSpeechRecognition available:",
-      "webkitSpeechRecognition" in window
-    );
-    console.log("SpeechRecognition available:", "SpeechRecognition" in window);
-
-    if (
-      navigator.userAgent.match(
-        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-      )
-    ) {
-      console.log("Mobile device detected");
-    } else {
-      console.log("Desktop device detected");
-    }
-  };
-
   // Speech-to-text (STT) using Web Speech API
   const startStt = () => {
     if (!connected) {
       setStatus("Cannot start speech-to-text: No user connected.");
       return;
     }
-
-    // Check if we're on HTTPS (required for mobile)
-    if (
-      window.location.protocol !== "https:" &&
-      window.location.hostname !== "localhost" &&
-      window.location.hostname !== "127.0.0.1"
-    ) {
-      alert(
-        "Speech recognition requires HTTPS on mobile devices. Please use HTTPS or localhost."
-      );
+    setShowSubtitle(true);
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Speech recognition not supported");
       return;
     }
-
-    // Check for speech recognition support with more specific detection
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert(
-        "Speech recognition not supported on this device/browser. Please try Chrome, Samsung Internet, or Edge."
-      );
-      return;
-    }
-
-    // Stop any existing recognition
-    if (recognition) {
-      try {
-        recognition.stop();
-      } catch (e) {
-        console.log("Error stopping previous recognition:", e);
-      }
-    }
-
-    const newRecognition = new SpeechRecognition();
-
-    // Detect mobile device
-    const isMobile = navigator.userAgent.match(
-      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-    );
-
-    // Configure for better mobile compatibility
-    newRecognition.lang = "en-US";
-    newRecognition.continuous = false; // Always false for mobile
-    newRecognition.interimResults = false; // Always false for mobile
-    newRecognition.maxAlternatives = 1;
-
-    // Android-specific settings
-    if (isMobile) {
-      // Try different language codes for Android
-      newRecognition.lang = navigator.language || "en-US";
-      console.log("Using language:", newRecognition.lang);
-    }
-
-    // Handle successful recognition
-    newRecognition.onresult = (event) => {
-      console.log("Recognition result event:", event);
-
-      if (event.results && event.results.length > 0) {
-        const transcript = event.results[0][0].transcript.trim();
-        console.log("Recognized transcript:", transcript);
-
-        if (transcript) {
-          setSubtitle(transcript);
-          const currentWs = ws;
-          if (currentWs && currentWs.readyState === WebSocket.OPEN) {
-            currentWs.send(JSON.stringify({ type: "stt", text: transcript }));
-          }
-          setStatus(`Recognized: ${transcript}`);
-        }
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSubtitle(transcript);
+      const currentWs = ws;
+      if (currentWs && currentWs.readyState === WebSocket.OPEN) {
+        currentWs.send(JSON.stringify({ type: "stt", text: transcript }));
       }
     };
-
-    // Handle errors with better mobile error messages
-    newRecognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-      console.log("Full error event:", event);
-      setIsListening(false);
-      setShowSubtitle(false);
-
-      let errorMessage = "";
-
-      switch (event.error) {
-        case "not-allowed":
-          errorMessage =
-            "Microphone access denied. Please allow microphone access and try again.";
-          // On mobile, show how to enable microphone
-          if (isMobile) {
-            errorMessage +=
-              " Check your browser settings and site permissions.";
-          }
-          break;
-        case "no-speech":
-          errorMessage =
-            "No speech detected. Please speak clearly and try again.";
-          break;
-        case "network":
-          errorMessage =
-            "Network error. Please check your internet connection.";
-          break;
-        case "service-not-allowed":
-          errorMessage =
-            "Speech recognition service not available on this site.";
-          break;
-        case "audio-capture":
-          errorMessage = "No microphone found or microphone access blocked.";
-          break;
-        case "aborted":
-          errorMessage = "Speech recognition was aborted.";
-          break;
-        default:
-          errorMessage = `Speech recognition error: ${event.error}`;
-      }
-
-      setStatus(errorMessage);
-
-      // Show alert for critical errors
-      if (
-        ["not-allowed", "audio-capture", "service-not-allowed"].includes(
-          event.error
-        )
-      ) {
-        alert(errorMessage);
-      }
-    };
-
-    // Handle when recognition ends
-    newRecognition.onend = () => {
-      console.log("Speech recognition ended");
-      setIsListening(false);
-      setShowSubtitle(false);
-
-      // Don't show "completed" if there was an error
-      if (!newRecognition.hadError) {
-        setStatus("Speech recognition completed");
-      }
-    };
-
-    // Handle when recognition starts
-    newRecognition.onstart = () => {
-      console.log("Speech recognition started");
-      setIsListening(true);
-      setShowSubtitle(true);
-      setStatus("Listening for speech... Speak now!");
-      newRecognition.hadError = false;
-    };
-
-    // Handle audio start (when browser actually starts listening)
-    newRecognition.onaudiostart = () => {
-      console.log("Audio capture started");
-      setStatus("Microphone active - speak now!");
-    };
-
-    // Handle audio end
-    newRecognition.onaudioend = () => {
-      console.log("Audio capture ended");
-    };
-
-    // Handle sound start (when speech is detected)
-    newRecognition.onsoundstart = () => {
-      console.log("Sound detected");
-      setStatus("Speech detected...");
-    };
-
-    // Handle sound end
-    newRecognition.onsoundend = () => {
-      console.log("Sound ended");
-      setStatus("Processing speech...");
-    };
-
-    // Handle speech start
-    newRecognition.onspeechstart = () => {
-      console.log("Speech started");
-    };
-
-    // Handle speech end
-    newRecognition.onspeechend = () => {
-      console.log("Speech ended");
-    };
-
-    try {
-      // Add a small delay for mobile devices
-      if (isMobile) {
-        setTimeout(() => {
-          newRecognition.start();
-          setRecognition(newRecognition);
-        }, 100);
-      } else {
-        newRecognition.start();
-        setRecognition(newRecognition);
-      }
-    } catch (error) {
-      console.error("Error starting speech recognition:", error);
-      setStatus("Failed to start speech recognition. Please try again.");
-      setIsListening(false);
-      setShowSubtitle(false);
-    }
-  };
-
-  // Function to stop speech recognition
-  const stopStt = () => {
-    if (recognition) {
-      try {
-        recognition.stop();
-      } catch (error) {
-        console.error("Error stopping speech recognition:", error);
-      }
-    }
-    setIsListening(false);
-    setShowSubtitle(false);
-    setStatus("Speech recognition stopped");
-  };
-
-  // Check if speech recognition is supported (call this when component mounts)
-  const checkSpeechSupport = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      console.warn("Speech recognition not supported");
-      return false;
-    }
-
-    // Additional mobile-specific checks
-    const isMobile = navigator.userAgent.match(
-      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-    );
-
-    if (isMobile) {
-      // Check if we're on HTTPS or localhost
-      if (
-        window.location.protocol !== "https:" &&
-        window.location.hostname !== "localhost" &&
-        window.location.hostname !== "127.0.0.1"
-      ) {
-        console.warn("HTTPS required for speech recognition on mobile");
-        return false;
-      }
-    }
-
-    return true;
+    recognition.start();
   };
 
   return (
@@ -1404,29 +625,7 @@ export default function Dashboard({ onLogout }) {
         </div>
         {/* STT */}
         <div className="stt-area">
-          <button
-            onClick={startStt}
-            disabled={isListening}
-            style={{
-              backgroundColor: isListening ? "#cccccc" : "#4fc3f7",
-              color: "white",
-              cursor: isListening ? "not-allowed" : "pointer",
-            }}
-          >
-            {isListening ? "Listening..." : "Start Speech-to-Text"}
-          </button>
-          <button
-            onClick={testSpeechRecognition}
-            style={{
-              backgroundColor: "#666",
-              color: "white",
-              marginLeft: "0.5rem",
-              fontSize: "0.8rem",
-              padding: "0.5rem",
-            }}
-          >
-            Debug STT
-          </button>
+          <button onClick={startStt}>Start Speech-to-Text</button>
           {subtitle && <div className="subtitle">{subtitle}</div>}
         </div>
       </div>
