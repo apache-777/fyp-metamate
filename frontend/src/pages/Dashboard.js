@@ -513,6 +513,12 @@ export default function Dashboard({ onLogout }) {
     if (data.type === "username") {
       console.log("Received peer username:", data.username);
       setPeerUsername(data.username);
+      // Update status if we're already showing the matched message
+      if (status.includes("Matched with")) {
+        setStatus(
+          `Matched with ${data.username} - Press button to start video call`
+        );
+      }
     }
 
     if (data.type === "offer") {
@@ -617,6 +623,11 @@ export default function Dashboard({ onLogout }) {
     console.log("📥 Received offer, creating answer...");
     setStatus("Connecting...");
     isCallerRef.current = false;
+
+    // Send our username to the peer (for non-caller)
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: "username", username: username }));
+    }
 
     try {
       // Clean up any existing peer connection
