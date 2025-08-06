@@ -1161,13 +1161,19 @@ export default function Dashboard({ onLogout }) {
         </div>
 
         {/* Chat Input */}
-        <div className="chat-area display convoArea">
+        <div
+          className="chat-area display convoArea"
+          style={{ display: "flex", width: "100%" }}
+        >
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a message"
+            style={{ width: "70%", marginRight: "0" }}
           />
-          <button onClick={sendMessage}>Send</button>
+          <button onClick={sendMessage} style={{ width: "30%" }}>
+            Send
+          </button>
         </div>
 
         {/* TTS */}
