@@ -578,14 +578,14 @@ export default function Dashboard({ onLogout }) {
       setSubtitle(data.text);
     }
 
-    if (data.type === "show_video_area") {
-      console.log("Received show video area command from peer");
-      document.getElementById("videoMain").classList.remove("display");
-    }
+    // if (data.type === "show_video_area") {
+    //   console.log("Received show video area command from peer");
+    //   document.getElementById("videoMain").classList.remove("display");
+    // }
 
     if (data.type === "hide_video_area") {
       console.log("Received hide video area command from peer");
-      document.getElementById("videoMain").classList.add("display");
+      document.querySelectorAll(".convoArea").classList.add("display");
     }
 
     if (data.type === "partner_disconnected") {
@@ -863,13 +863,9 @@ export default function Dashboard({ onLogout }) {
 
   // Force ICE restart function
   const startVideo = () => {
-    document.getElementById("videoMain").classList.remove("display");
+    document.querySelectorAll(".convoArea").classList.remove("display");
     setShowStartVideoButton(false); // Hide the button when clicked
 
-    // Send message to peer to show their video area
-    // if (ws && ws.readyState === WebSocket.OPEN) {
-    //   ws.send(JSON.stringify({ type: "show_video_area" }));
-    // }
     if (pcRef.current) {
       try {
         // Create a new offer with ICE restart
@@ -1015,7 +1011,9 @@ export default function Dashboard({ onLogout }) {
           {connected && (
             <button
               onClick={() => {
-                document.getElementById("videoMain").classList.add("display");
+                document
+                  .querySelectorAll(".convoArea")
+                  .classList.add("display");
                 console.log("Stopping video call...");
                 // Send message to peer to hide their video area
                 if (ws && ws.readyState === WebSocket.OPEN) {
@@ -1086,7 +1084,7 @@ export default function Dashboard({ onLogout }) {
         )}
 
         {/* Video area */}
-        <div className="video-area pip-area display" id="videoMain">
+        <div className="video-area pip-area display convoArea">
           <div className="remote-video-container">
             <video
               ref={remoteVideoRef}
@@ -1142,7 +1140,7 @@ export default function Dashboard({ onLogout }) {
         )}
 
         {/* Chat */}
-        <div className="chat-area">
+        <div className="chat-area display convoArea">
           <div className="chat-messages">
             {chat.map((msg, i) => (
               <div
@@ -1162,7 +1160,7 @@ export default function Dashboard({ onLogout }) {
         </div>
 
         {/* TTS */}
-        <div className="tts-area">
+        <div className="tts-area display convoArea">
           <input
             value={ttsText}
             onChange={(e) => setTtsText(e.target.value)}
@@ -1172,7 +1170,7 @@ export default function Dashboard({ onLogout }) {
         </div>
 
         {/* STT */}
-        <div className="stt-area">
+        <div className="stt-area display convoArea">
           <button onClick={startStt}>Start Speech-to-Text</button>
           {subtitle && <div className="subtitle">{subtitle}</div>}
         </div>
