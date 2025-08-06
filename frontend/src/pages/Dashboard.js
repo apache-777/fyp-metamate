@@ -853,7 +853,7 @@ export default function Dashboard({ onLogout }) {
 
   // Force ICE restart function
   const startVideo = () => {
-    let videoArea = document.getElementById(".display");
+    let videoArea = document.querySelector(".display");
     videoArea.style.display = "flex !important";
     console.log("Forcing ICE restart...");
     setShowStartVideoButton(false); // Hide the button when clicked
