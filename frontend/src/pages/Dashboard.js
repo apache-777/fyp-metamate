@@ -384,22 +384,22 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
-  // const handleReceiveCandidate = async (candidate) => {
-  //   try {
-  //     if (pcRef.current && pcRef.current.remoteDescription) {
-  //       console.log("Adding ICE candidate...");
-  //       await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-  //       console.log("ICE candidate added successfully");
-  //     } else {
-  //       console.log(
-  //         "Ignoring ICE candidate - no peer connection or remote description"
-  //       );
-  //     }
-  //   } catch (err) {
-  //     console.error("Error adding ICE candidate:", err);
-  //     // Don't show error to user for ICE candidate issues
-  //   }
-  // };
+  const handleReceiveCandidate = async (candidate) => {
+    try {
+      if (pcRef.current && pcRef.current.remoteDescription) {
+        console.log("Adding ICE candidate...");
+        await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        console.log("ICE candidate added successfully");
+      } else {
+        console.log(
+          "Ignoring ICE candidate - no peer connection or remote description"
+        );
+      }
+    } catch (err) {
+      console.error("Error adding ICE candidate:", err);
+      // Don't show error to user for ICE candidate issues
+    }
+  };
 
   // // Cleanup on disconnect or logout
   // const cleanupCall = () => {
