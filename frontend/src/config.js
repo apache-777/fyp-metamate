@@ -11,8 +11,6 @@ const config = {
     WS_URL:
       process.env.REACT_APP_WS_URL ||
       "wss://fyp-metamate-production.up.railway.app",
-    AGORA_APP_ID:
-      process.env.REACT_APP_AGORA_APP_ID || "351aac62ef584247ae1b29ba21a82624",
   },
 };
 
