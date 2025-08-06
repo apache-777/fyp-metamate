@@ -442,12 +442,12 @@ export default function Dashboard({ onLogout }) {
     }
 
     // Check if username is loaded
-    if (!username) {
-      console.error("Username not loaded yet, cannot start matchmaking");
-      setStatus("Loading user data...");
-      setPendingMatchmaking(true);
-      return;
-    }
+    // if (!username) {
+    //   console.error("Username not loaded yet, cannot start matchmaking");
+    //   setStatus("Loading user data...");
+    //   setPendingMatchmaking(true);
+    //   return;
+    // }
 
     // Ensure any existing WebSocket is properly closed
     if (ws) {
