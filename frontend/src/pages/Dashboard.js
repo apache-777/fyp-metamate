@@ -983,44 +983,52 @@ export default function Dashboard({ onLogout }) {
 
         {/* Video area */}
         <div className="video-area pip-area">
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            muted={false}
-            className="remote-video"
-            style={{
-              backgroundColor: "#000",
-              minHeight: "300px",
-              width: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-            onLoadedMetadata={() => console.log("Remote video metadata loaded")}
-            onCanPlay={() => console.log("Remote video can play")}
-            onPlay={() => console.log("Remote video started playing")}
-            onError={(e) => console.error("Remote video error:", e)}
-            onLoadedData={() => console.log("Remote video data loaded")}
-            onWaiting={() => console.log("Remote video waiting")}
-            onStalled={() => console.log("Remote video stalled")}
-          />
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className="local-video-pip"
-            style={{
-              backgroundColor: "#333",
-              minHeight: "150px",
-              width: "200px",
-              objectFit: "cover",
-            }}
-            onLoadedMetadata={() => console.log("Local video metadata loaded")}
-            onCanPlay={() => console.log("Local video can play")}
-            onPlay={() => console.log("Local video started playing")}
-            onError={(e) => console.error("Local video error:", e)}
-          />
+          <div className="remote-video-container">
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              muted={false}
+              className="remote-video"
+              style={{
+                backgroundColor: "#000",
+                minHeight: "300px",
+                width: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+              onLoadedMetadata={() =>
+                console.log("Remote video metadata loaded")
+              }
+              onCanPlay={() => console.log("Remote video can play")}
+              onPlay={() => console.log("Remote video started playing")}
+              onError={(e) => console.error("Remote video error:", e)}
+              onLoadedData={() => console.log("Remote video data loaded")}
+              onWaiting={() => console.log("Remote video waiting")}
+              onStalled={() => console.log("Remote video stalled")}
+            />
+          </div>
+          <div className="local-video-container">
+            <video
+              ref={localVideoRef}
+              autoPlay
+              muted
+              playsInline
+              className="local-video-pip"
+              style={{
+                backgroundColor: "#333",
+                minHeight: "150px",
+                width: "100%",
+                objectFit: "cover",
+              }}
+              onLoadedMetadata={() =>
+                console.log("Local video metadata loaded")
+              }
+              onCanPlay={() => console.log("Local video can play")}
+              onPlay={() => console.log("Local video started playing")}
+              onError={(e) => console.error("Local video error:", e)}
+            />
+          </div>
         </div>
 
         {/* Debug information */}
