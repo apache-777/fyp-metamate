@@ -585,7 +585,11 @@ export default function Dashboard({ onLogout }) {
 
     if (data.type === "hide_video_area") {
       console.log("Received hide video area command from peer");
-      document.querySelectorAll(".convoArea").classList.add("display");
+      const divsToModify = document.querySelectorAll(".convoArea");
+
+      divsToModify.forEach((div) => {
+        div.classList.add("display");
+      });
     }
 
     if (data.type === "partner_disconnected") {
@@ -863,7 +867,11 @@ export default function Dashboard({ onLogout }) {
 
   // Force ICE restart function
   const startVideo = () => {
-    document.querySelectorAll(".convoArea").classList.remove("display");
+    const divsToModify = document.querySelectorAll(".convoArea");
+
+    divsToModify.forEach((div) => {
+      div.classList.remove("display");
+    });
     setShowStartVideoButton(false); // Hide the button when clicked
 
     if (pcRef.current) {
@@ -1011,9 +1019,11 @@ export default function Dashboard({ onLogout }) {
           {connected && (
             <button
               onClick={() => {
-                document
-                  .querySelectorAll(".convoArea")
-                  .classList.add("display");
+                const divsToModify = document.querySelectorAll(".convoArea");
+
+                divsToModify.forEach((div) => {
+                  div.classList.add("display");
+                });
                 console.log("Stopping video call...");
                 // Send message to peer to hide their video area
                 if (ws && ws.readyState === WebSocket.OPEN) {
