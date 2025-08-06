@@ -983,6 +983,18 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
+  // Auto ICE restart when status becomes "In call - active"
+  useEffect(() => {
+    if (status === "In call - Video active") {
+      const timer = setTimeout(() => {
+        console.log("Auto-triggering ICE restart after 2 seconds...");
+        forceIceRestart();
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   // Cleanup on component unmount
   useEffect(() => {
     return () => {
