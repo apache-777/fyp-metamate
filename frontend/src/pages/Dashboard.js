@@ -463,7 +463,7 @@ export default function Dashboard({ onLogout }) {
 
     socket.onclose = (event) => {
       console.log("WebSocket closed:", event.code, event.reason);
-      setStatus("WebSocket connection closed");
+      setStatus("Call Ended");
       setWs(null);
     };
 
@@ -932,7 +932,6 @@ export default function Dashboard({ onLogout }) {
       <div className="dashboard-container">
         <h2>Video Call Dashboard</h2>
         <div>
-          Status:{" "}
           {status === "In call" && peerUsername
             ? `In call with ${peerUsername}`
             : status}
