@@ -204,7 +204,6 @@ body {
   max-height: 200px;
   overflow-y: auto;
   display: block;
-  width: 100%;
 }
 .my-msg {
   text-align: left;
