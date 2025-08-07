@@ -935,7 +935,7 @@ body {
 
 .profile-update-container {
   max-width: 480px;
-  margin: 3rem 2rem;
+  margin: 3rem auto;
   background: rgba(255, 255, 255, 0.13);
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(31, 38, 135, 0.13);
