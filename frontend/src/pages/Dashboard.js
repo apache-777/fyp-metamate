@@ -1155,7 +1155,7 @@ export default function Dashboard({ onLogout }) {
         {/* Chat Input */}
         <div
           className="chat-area display convoArea"
-          style={{ display: "flex", width: "100%" }}
+          style={{ display: "flex" }}
         >
           <input
             value={message}
